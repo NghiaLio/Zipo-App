@@ -15,4 +15,19 @@ class ConvertTime {
       return 'Just now';
     }
   }
+
+  static String formatDuration(Duration duration) {
+    if (duration.inDays > 7) {
+      final timestamp = DateTime.now().subtract(duration);
+      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+    } else if (duration.inDays >= 1) {
+      return '${duration.inDays} d ago';
+    } else if (duration.inHours >= 1) {
+      return '${duration.inHours} h ago';
+    } else if (duration.inMinutes >= 1) {
+      return '${duration.inMinutes} min ago';
+    } else {
+      return 'Just now';
+    }
+  }
 }

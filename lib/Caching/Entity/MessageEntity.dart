@@ -10,6 +10,7 @@ class MessageEntity {
   @Index()
   late String chatId;
   late ReplyingToEmbedded? replyingTo;
+  @Index()
   late String senderId;
   late String content;
   @Index()

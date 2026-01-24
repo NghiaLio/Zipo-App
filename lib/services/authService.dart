@@ -11,7 +11,6 @@ import 'package:maintain_chat_app/Caching/Database/ListFriends.dart';
 
 import '../models/userModels.dart';
 
-
 class Authservice implements Authrepo {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
@@ -41,7 +40,33 @@ class Authservice implements Authrepo {
       return currentUser;
     } on FirebaseAuthException catch (e) {
       log("lỗi $e");
-      return null;
+      String errorMessage;
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'Tài khoản không tồn tại';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Mật khẩu không đúng';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Email không hợp lệ';
+          break;
+        case 'user-disabled':
+          errorMessage = 'Tài khoản đã bị vô hiệu hóa';
+          break;
+        case 'too-many-requests':
+          errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Lỗi kết nối mạng';
+          break;
+        case 'invalid-credential':
+          errorMessage = 'Email hoặc mật khẩu không đúng';
+          break;
+        default:
+          errorMessage = 'Đăng nhập thất bại: ${e.message}';
+      }
+      throw Exception(errorMessage);
     }
   }
 
@@ -78,7 +103,27 @@ class Authservice implements Authrepo {
 
       return currentUser;
     } on FirebaseAuthException catch (e) {
-      throw Exception(e);
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = 'Email đã được sử dụng';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Email không hợp lệ';
+          break;
+        case 'operation-not-allowed':
+          errorMessage = 'Tính năng đăng ký đã bị tắt';
+          break;
+        case 'weak-password':
+          errorMessage = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn';
+          break;
+        case 'network-request-failed':
+          errorMessage = 'Lỗi kết nối mạng';
+          break;
+        default:
+          errorMessage = 'Đăng ký thất bại: ${e.message}';
+      }
+      throw Exception(errorMessage);
     }
   }
 

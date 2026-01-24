@@ -19,7 +19,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UsersErrorEvent>(_onUsersError);
     on<LoadFriendUsersEvent>(_onLoadFriendUsers);
     on<UpdateListFriendUsersEvent>(_onUpdateListFriendUsers);
+    on<LoadFriendRequestsEvent>(_onLoadFriendRequests);
+    on<UpdateFriendRequestsEvent>(_onUpdateFriendRequests);
     on<UpdateUserProfileEvent>(_onUpdateUserProfile);
+    on<ToggleFriendRequestEvent>(_onToggleFriendRequest);
+    on<RejectFriendRequestEvent>(_onRejectFriendRequest);
+    on<ToggleFriendEvent>(_onToggleFriend);
   }
 
   Future<void> _onLoadUsers(
@@ -72,6 +77,38 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(error: event.error, isLoading: false));
   }
 
+  Future<void> _onLoadFriendRequests(
+    LoadFriendRequestsEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final requests = await userRepository.loadFriendRequest();
+      emit(
+        state.copyWith(
+          listFriendRequests: requests,
+          isLoading: false,
+          error: null,
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(error: e.toString(), isLoading: false));
+    }
+  }
+
+  void _onUpdateFriendRequests(
+    UpdateFriendRequestsEvent event,
+    Emitter<UserState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        listFriendRequests: event.requests,
+        isLoading: false,
+        error: null,
+      ),
+    );
+  }
+
   Future<void> _onUpdateUserProfile(
     UpdateUserProfileEvent event,
     Emitter<UserState> emit,
@@ -85,6 +122,48 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       emit(state.copyWith(userApp: updatedUser, isLoading: false, error: null));
     } catch (e) {
       emit(state.copyWith(error: e.toString(), isLoading: false));
+    }
+  }
+
+  Future<void> _onToggleFriendRequest(
+    ToggleFriendRequestEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    try {
+      await userRepository.toggleFriendRequest(
+        event.friendId,
+        event.isSendRequest,
+      );
+      add(LoadUsersEvent(state.userApp?.id ?? ''));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onToggleFriend(
+    ToggleFriendEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    try {
+      await userRepository.toggleFriend(event.friendId, event.isFriend);
+      add(LoadUsersEvent(state.userApp?.id ?? ''));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onRejectFriendRequest(
+    RejectFriendRequestEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    try {
+      await userRepository.rejectFriendRequest(
+        senderId: event.senderId,
+        receiverId: event.receiverId,
+      );
+      add(LoadUsersEvent(state.userApp?.id ?? ''));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
     }
   }
 

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authBloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
+import 'package:maintain_chat_app/bloc/auth/authStates.dart';
 
 import '../../widgets/Loading.dart';
+import '../../widgets/TopSnackBar.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -51,11 +53,13 @@ class _RegisterState extends State<Register> {
       setState(() {
         isLoading = true;
       });
-      context.read<AuthBloc>().add(RegisterEvent(
-        nameController.text.trim(),
-        emailController.text.trim(),
-        passController.text.trim(),
-      ));
+      context.read<AuthBloc>().add(
+        RegisterEvent(
+          nameController.text.trim(),
+          emailController.text.trim(),
+          passController.text.trim(),
+        ),
+      );
       setState(() {
         isLoading = false;
       });
@@ -144,16 +148,25 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return GestureDetector(
-      onTap: FocusScope.of(context).unfocus,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: Column(
-          children: [
-            Expanded(flex: 3, child: _buildHeader(size)),
-            const Spacer(),
-            Expanded(flex: 5, child: _buildFormCard(size)),
-          ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.message != null &&
+            state.message!.isNotEmpty &&
+            !state.isAuthenticated) {
+          showSnackBar.show_error(state.message!, context);
+        }
+      },
+      child: GestureDetector(
+        onTap: FocusScope.of(context).unfocus,
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          body: Column(
+            children: [
+              Expanded(flex: 3, child: _buildHeader(size)),
+              const Spacer(),
+              Expanded(flex: 5, child: _buildFormCard(size)),
+            ],
+          ),
         ),
       ),
     );

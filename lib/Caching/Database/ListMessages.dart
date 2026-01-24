@@ -21,6 +21,24 @@ class IsarMessageDao {
 
   Future<void> upsert(MessageItem message, String chatId) async {
     await isar.writeTxn(() async {
+      final sendAtString = message.sendAt.toDate().toIso8601String();
+
+      // Check by senderId AND sendAt (chỉ bỏ qua khi trùng CẢ HAI)
+      final existingBySenderAndTime =
+          await isar.messageEntitys
+              .where()
+              .filter()
+              .senderIdEqualTo(message.senderID)
+              .and()
+              .sendAtEqualTo(sendAtString)
+              .findFirst();
+
+      if (existingBySenderAndTime != null) {
+        // Bỏ qua nếu đã tồn tại cùng sender và cùng thời gian (tránh duplicate)
+        return;
+      }
+
+      // Insert new message
       final entity = toMessageEntity(chatId, message);
       await isar.messageEntitys.put(entity);
     });

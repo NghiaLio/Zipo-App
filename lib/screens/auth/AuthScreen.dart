@@ -57,6 +57,7 @@ class _AuthScreenState extends State<AuthScreen> {
           final authBloc = context.read<AuthBloc>();
           await authBloc.chatRepository.init();
           await authBloc.userRepository.init();
+          await authBloc.postRepository.initPosts(state.user!);
 
           final userId = state.user?.id;
           if (userId != null) {

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
+import 'package:maintain_chat_app/bloc/auth/authStates.dart';
 import 'package:maintain_chat_app/screens/auth/ResetPass.dart';
 import 'package:maintain_chat_app/screens/auth/register.dart';
 
@@ -86,16 +87,25 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return GestureDetector(
-      onTap: FocusScope.of(context).unfocus,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: Column(
-          children: [
-            Expanded(flex: 3, child: _buildHeader(size)),
-            const Spacer(),
-            Expanded(flex: 5, child: _buildFormCard(size)),
-          ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.message != null &&
+            state.message!.isNotEmpty &&
+            !state.isAuthenticated) {
+          showSnackBar.show_error(state.message!, context);
+        }
+      },
+      child: GestureDetector(
+        onTap: FocusScope.of(context).unfocus,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Column(
+            children: [
+              Expanded(flex: 3, child: _buildHeader(size)),
+              const Spacer(),
+              Expanded(flex: 5, child: _buildFormCard(size)),
+            ],
+          ),
         ),
       ),
     );

@@ -16,7 +16,7 @@ class MessageService implements MessageRepo {
   @override
   Future<void> createMessage(MessageItem message, String chatId) async {
     try {
-      //local
+      // Optimistic update: upsert local trước
       await _isarMessageDao.updateLatestMessage(chatId, false);
       await _isarMessageDao.upsert(message, chatId);
 
@@ -75,9 +75,9 @@ class MessageService implements MessageRepo {
       //   sendPushNotification(currentUser, receiveUser, mess.content);
       // }
     } catch (e) {
-      final MessageEntity? latestMessage = await _isarMessageDao
-          .getLatestMessage(chatId);
-      await _isarMessageDao.deleteMessagesById(latestMessage?.id ?? 0);
+      // Nếu fail, delete khỏi local by sendAt
+      final sendAtString = message.sendAt.toDate().toIso8601String();
+      await _isarMessageDao.deleteMessageBySendAt(sendAtString);
       throw Exception('Failed to create message: $e');
     }
   }

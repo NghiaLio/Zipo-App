@@ -55,6 +55,8 @@ dependencies:
   record: ^6.1.2
   audioplayers: ^6.5.1
   permission_handler: ^12.0.1
+  flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -68,7 +70,30 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   isar_generator: ^3.1.0+1
   build_runner: ^2.4.13
+  mockito: ^5.4.4
 
+flutter_launcher_icons: 
+  android: "launcher_icon"
+  ios: "AppIcon"
+  # image_path_android: "assets/zago Icon/res/mipmap-xxxhdpi/zago Icon.png"
+  image_path: "assets/icon/res/mipmap-xxxhdpi/zago Icon.png"
+  adaptive_icon_foreground: "assets/icon/res/mipmap-xxxhdpi/zago Icon_adaptive_fore.png"
+  adaptive_icon_background: "#ffffff"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+
+
+  color: "#ffffff"
+  image: "assets/icon/res/mipmap-xxxhdpi/zago Icon_adaptive_fore.png"
+  
+  android_12:
+    color: "#ffffff"
+    image: "assets/icon/res/mipmap-xxxhdpi/zago Icon_adaptive_fore.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

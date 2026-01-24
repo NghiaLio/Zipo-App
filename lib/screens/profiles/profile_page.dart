@@ -8,6 +8,8 @@ import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userState.dart';
 import 'package:maintain_chat_app/screens/profiles/profile_detail_page.dart';
+import 'package:maintain_chat_app/screens/profiles/friend_page.dart';
+import 'package:maintain_chat_app/screens/settings/settings_home.dart';
 import 'about_page.dart';
 import '../../utils/responsive_helper.dart';
 import '../../widgets/profile_menu_item.dart';
@@ -53,7 +55,14 @@ class _ProfilePageState extends State<ProfilePage> {
               color: Colors.black,
               size: ResponsiveHelper.getFontSize(context, 24),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -164,6 +173,18 @@ class _ProfilePageState extends State<ProfilePage> {
                               MaterialPageRoute(
                                 builder:
                                     (context) => ProfileDetailPage(user: user),
+                              ),
+                            );
+                          },
+                        ),
+                        ProfileMenuItem(
+                          icon: Icons.people_outline,
+                          title: 'Bạn bè',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const FriendPage(),
                               ),
                             );
                           },

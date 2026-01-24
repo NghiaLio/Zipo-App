@@ -5,6 +5,7 @@ import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
 import 'package:maintain_chat_app/bloc/auth/authStates.dart';
 import 'package:maintain_chat_app/repositories/chatRepo.dart';
 import 'package:maintain_chat_app/repositories/messageRepo.dart';
+import 'package:maintain_chat_app/repositories/postRepo.dart';
 import 'package:maintain_chat_app/repositories/userRepo.dart';
 
 import '../../models/userModels.dart';
@@ -15,8 +16,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ChatRepo chatRepository; // Thêm ChatRepo vào AuthBloc
   final UserRepo userRepository;
   final MessageRepo messageRepository;
-  AuthBloc(this.authRepo, this.chatRepository, this.userRepository, this.messageRepository)
-    : super(const AuthState()) {
+  final PostRepo postRepository;
+  AuthBloc(
+    this.authRepo,
+    this.chatRepository,
+    this.userRepository,
+    this.messageRepository,
+    this.postRepository,
+  ) : super(const AuthState()) {
     on<LoginEvent>(_login);
     on<RegisterEvent>(_register);
     on<LogoutEvent>(_logOut);
@@ -43,16 +50,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           state.copyWith(
             isLoading: false,
             isAuthenticated: false,
-            message: 'Tài khoản hoặc mật khẩu không đúng',
+            message: 'Đăng nhập thất bại',
           ),
         );
       }
     } catch (e) {
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
       emit(
         state.copyWith(
           isLoading: false,
           isAuthenticated: false,
-          message: 'Có lỗi',
+          message: errorMessage,
         ),
       );
     }
@@ -76,16 +84,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           state.copyWith(
             isLoading: false,
             isAuthenticated: false,
-            message: 'Tạo tài khoản thất bại, thử lại sau',
+            message: 'Tạo tài khoản thất bại',
           ),
         );
       }
     } catch (e) {
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
       emit(
         state.copyWith(
           isLoading: false,
           isAuthenticated: false,
-          message: 'Tạo tài khoản thất bại, thử lại sau',
+          message: errorMessage,
         ),
       );
     }

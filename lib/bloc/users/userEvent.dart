@@ -26,6 +26,17 @@ class UsersUpdatedEvent extends UserEvent {
   List<Object?> get props => [users];
 }
 
+class LoadFriendRequestsEvent extends UserEvent {}
+
+class UpdateFriendRequestsEvent extends UserEvent {
+  final List<UserApp> requests;
+
+  UpdateFriendRequestsEvent(this.requests);
+
+  @override
+  List<Object?> get props => [requests];
+}
+
 class UsersErrorEvent extends UserEvent {
   final String error;
 
@@ -53,4 +64,38 @@ class UpdateUserProfileEvent extends UserEvent {
 
   @override
   List<Object?> get props => [user];
+}
+
+class ToggleFriendRequestEvent extends UserEvent {
+  final String friendId;
+  final bool isSendRequest;
+
+  ToggleFriendRequestEvent(
+    this.friendId,
+    this.isSendRequest, {
+    required String currentUserId,
+  });
+
+  @override
+  List<Object?> get props => [friendId, isSendRequest];
+}
+
+class RejectFriendRequestEvent extends UserEvent {
+  final String senderId; // người gửi lời mời
+  final String receiverId; // người nhận lời mời (currentUser)
+
+  RejectFriendRequestEvent({required this.senderId, required this.receiverId});
+
+  @override
+  List<Object?> get props => [senderId, receiverId];
+}
+
+class ToggleFriendEvent extends UserEvent {
+  final String friendId;
+  final bool isFriend;
+
+  ToggleFriendEvent(this.friendId, this.isFriend);
+
+  @override
+  List<Object?> get props => [friendId, isFriend];
 }

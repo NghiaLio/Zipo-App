@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'messenger_page.dart';
-import 'posts_page.dart';
+import '../Social/posts_page.dart';
 import '../profiles/profile_page.dart';
 
 class MainScreen extends StatefulWidget {

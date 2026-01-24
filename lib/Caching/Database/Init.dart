@@ -2,6 +2,7 @@
 
 import 'package:isar/isar.dart';
 import 'package:maintain_chat_app/Caching/Entity/MessageEntity.dart';
+import 'package:maintain_chat_app/Caching/Entity/PostEntity.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../Entity/ChatEntity.dart';
@@ -22,6 +23,7 @@ class InitializedCaching {
       ChatEntitySchema,
       UserEntitySchema,
       MessageEntitySchema,
+      PostEntitySchema
     ], directory: dir.path);
   }
 }

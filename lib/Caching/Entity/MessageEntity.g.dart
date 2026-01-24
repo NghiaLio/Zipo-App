@@ -79,6 +79,19 @@ const MessageEntitySchema = CollectionSchema(
         )
       ],
     ),
+    r'senderId': IndexSchema(
+      id: -1619654757968658561,
+      name: r'senderId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'senderId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
     r'sendAt': IndexSchema(
       id: 1134808746094077929,
       name: r'sendAt',
@@ -348,6 +361,51 @@ extension MessageEntityQueryWhere
               indexName: r'chatId',
               lower: [],
               upper: [chatId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<MessageEntity, MessageEntity, QAfterWhereClause> senderIdEqualTo(
+      String senderId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'senderId',
+        value: [senderId],
+      ));
+    });
+  }
+
+  QueryBuilder<MessageEntity, MessageEntity, QAfterWhereClause>
+      senderIdNotEqualTo(String senderId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'senderId',
+              lower: [],
+              upper: [senderId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'senderId',
+              lower: [senderId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'senderId',
+              lower: [senderId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'senderId',
+              lower: [],
+              upper: [senderId],
               includeUpper: false,
             ));
       }

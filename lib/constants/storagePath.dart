@@ -8,3 +8,5 @@ const String MESSAGE_IMAGE_BUCKET = 'message_images';
 const String MESSAGE_AUDIO_BUCKET = 'audio';
 const String MESSAGE_VIDEO_BUCKET = 'video';
 const String AVATAR_IMAGE_BUCKET = 'avatar_images';
+const String POST_IMAGE_BUCKET = 'post_images';
+const String POST_VIDEO_BUCKET = 'post_video';
