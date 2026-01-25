@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:maintain_chat_app/Caching/Database/Init.dart';
 import 'package:maintain_chat_app/Caching/Database/ListPost.dart';
+import 'package:maintain_chat_app/models/comments_post_models.dart';
 import 'package:maintain_chat_app/models/like_models.dart';
 import 'package:maintain_chat_app/models/post_models.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
@@ -26,14 +26,136 @@ class PostService implements PostRepo {
 
   StreamSubscription? _remoteSub;
   @override
-  Future<void> clearCachePosts() {
-    return _isarPost.clearAllPosts();
+  Future<void> clearCachePosts() async {
+    await _isarPost.clearAllPosts();
   }
 
   @override
-  Future<void> commentsPost(String postId) {
-    // TODO: implement commentsPost
-    throw UnimplementedError();
+  Future<void> commentsPost(Comment comment, String? parentCommentId) async {
+    try {
+      // Thêm comment vào Supabase - không cache local
+      final commentResponse = commentToCommentPostResponse(
+        comment,
+        parentCommentId: parentCommentId,
+      );
+      await databaseComment.insert(commentResponse.toJson());
+      log('Comment inserted to Supabase successfully');
+      // cập nhật số lượng comment trong bảng posts
+      final PostItem postItem = await _isarPost.getPostById(
+        comment.postId.toString(),
+      );
+      final updatedPost = postItem.copyWith(comments: postItem.comments + 1);
+      await updatePost(comment.postId.toString(), updatedPost);
+    } catch (e) {
+      throw Exception('Error creating comment: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteComment(String commentId, String postId) async {
+    try {
+      await databaseComment.delete().eq('id', int.parse(commentId));
+      log('Comment deleted successfully');
+
+      // cập nhật số lượng comment trong bảng posts
+      final PostItem postItem = await _isarPost.getPostById(postId);
+      final updatedPost = postItem.copyWith(comments: postItem.comments - 1);
+      await updatePost(postId, updatedPost);
+    } catch (e) {
+      throw Exception('Error deleting comment: $e');
+    }
+  }
+
+  @override
+  Future<void> updateComment(
+    String commentId,
+    String postId,
+    String newContent,
+  ) async {
+    try {
+      await databaseComment
+          .update({'content': newContent})
+          .eq('id', int.parse(commentId));
+      log('Comment updated successfully');
+    } catch (e) {
+      throw Exception('Error updating comment: $e');
+    }
+  }
+
+  @override
+  Future<List<Comment>> getAllComments(String postId) async {
+    try {
+      // get comments from remote
+      final response = await databaseComment.select().eq(
+        'post_id',
+        int.parse(postId),
+      );
+
+      final comments =
+          response.map((json) => CommentPostResponse.fromJson(json)).toList();
+
+      // Build map of all comments with user info
+      final Map<int, Comment> commentMap = {};
+
+      for (var commentResponse in comments) {
+        final user = await _userRepo.getUserById(commentResponse.userId ?? '');
+        if (user != null) {
+          final commentModel = commentPostResponseToComment(
+            commentResponse,
+            user.userName,
+            user.avatarUrl ?? '',
+          );
+          commentMap[commentResponse.id!] = commentModel;
+        }
+      }
+
+      // Build tree structure: attach replies to parents
+      final List<Comment> rootComments = [];
+      final Map<int, List<Comment>> childrenMap = {};
+
+      // Group children by parent
+      for (var commentResponse in comments) {
+        if (commentResponse.parentComment != null) {
+          childrenMap.putIfAbsent(commentResponse.parentComment!, () => []);
+          final comment = commentMap[commentResponse.id];
+          if (comment != null) {
+            childrenMap[commentResponse.parentComment!]!.add(comment);
+          }
+        }
+      }
+
+      // Recursively attach children to parents
+      void attachChildren(Comment comment) {
+        final commentId = int.tryParse(comment.id ?? '');
+        if (commentId != null && childrenMap.containsKey(commentId)) {
+          final children = childrenMap[commentId]!;
+          // Attach children recursively
+          for (var child in children) {
+            attachChildren(child);
+          }
+          // Update comment with children
+          final updatedComment = comment.copyWith(replies: children);
+          commentMap[commentId] = updatedComment;
+        }
+      }
+
+      // Find root comments (no parent) and attach their children
+      for (var commentResponse in comments) {
+        if (commentResponse.parentComment == null) {
+          var rootComment = commentMap[commentResponse.id!];
+          if (rootComment != null) {
+            attachChildren(rootComment);
+            // Get updated version with attached children
+            rootComment = commentMap[commentResponse.id!]!;
+            rootComments.add(rootComment);
+          }
+        }
+      }
+
+      return rootComments;
+    } catch (e) {
+      throw Exception('Error fetching comments: $e');
+    }
   }
 
   @override

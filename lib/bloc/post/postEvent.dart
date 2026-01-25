@@ -1,3 +1,4 @@
+import 'package:maintain_chat_app/models/comments_post_models.dart';
 import 'package:maintain_chat_app/models/post_models.dart';
 import 'package:equatable/equatable.dart';
 
@@ -52,4 +53,40 @@ class ToggleLike extends PostEvent {
   ToggleLike(this.postId, this.isLike);
   @override
   List<Object?> get props => [postId, isLike];
+}
+
+class LoadCommentForPost extends PostEvent {
+  final String postId;
+
+  LoadCommentForPost(this.postId);
+  @override
+  List<Object?> get props => [postId];
+}
+
+class CommentOnPost extends PostEvent {
+  final Comment newComment;
+  final String? parentCommentId;
+
+  CommentOnPost(this.newComment, this.parentCommentId);
+  @override
+  List<Object?> get props => [newComment, parentCommentId];
+}
+
+class DeleteComment extends PostEvent {
+  final String commentId;
+  final String postId;
+
+  DeleteComment(this.commentId, this.postId);
+  @override
+  List<Object?> get props => [commentId, postId];
+}
+
+class UpdateComment extends PostEvent {
+  final String commentId;
+  final String postId;
+  final String newContent;
+
+  UpdateComment(this.commentId, this.postId, this.newContent);
+  @override
+  List<Object?> get props => [commentId, postId, newContent];
 }

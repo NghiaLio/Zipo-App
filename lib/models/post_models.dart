@@ -165,7 +165,9 @@ PostResponse mapPostItemToPostResponse(PostItem postItem) {
     user_id: postItem.authorId,
     content: postItem.content,
     media_url: postItem.imageUrl,
-    created_at: postItem.createdAt?.toIso8601String() ?? '',
+    created_at:
+        postItem.createdAt?.toUtc().toIso8601String() ??
+        DateTime.now().toUtc().toIso8601String(),
     total_likes: postItem.likes,
     total_comments: postItem.comments,
     clientId: postItem.clientId,

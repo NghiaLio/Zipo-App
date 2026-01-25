@@ -23,7 +23,7 @@ class InitializedCaching {
       ChatEntitySchema,
       UserEntitySchema,
       MessageEntitySchema,
-      PostEntitySchema
+      PostEntitySchema,
     ], directory: dir.path);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:maintain_chat_app/models/comments_post_models.dart';
 import 'package:maintain_chat_app/models/post_models.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 
@@ -10,5 +11,12 @@ abstract class PostRepo {
   Future<void> updatePost(String postId, PostItem updatedPost);
   Future<void> deletePost(String postId);
   Future<void> togglelikesPost(String postId, bool isLike);
-  Future<void> commentsPost(String postId);
+  Future<List<Comment>> getAllComments(String postId);
+  Future<void> commentsPost(Comment comment, String? parentCommentId);
+  Future<void> deleteComment(String commentId, String postId);
+  Future<void> updateComment(
+    String commentId,
+    String postId,
+    String newContent,
+  );
 }

@@ -11,6 +11,7 @@ import 'package:maintain_chat_app/constants/storagePath.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
 import 'package:maintain_chat_app/services/fileService.dart';
+import 'package:maintain_chat_app/utils/convert_time.dart';
 import 'package:video_player/video_player.dart';
 import '../../bloc/users/userBloc.dart';
 import '../../bloc/users/userState.dart';
@@ -191,6 +192,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
         final String clientId =
             '${currentUser?.id ?? ''}_${DateTime.now().millisecondsSinceEpoch}';
 
+        final now = DateTime.now().toUtc();
         PostItem newPost = PostItem(
           clientId: clientId,
           content: _contentController.text.trim(),
@@ -198,8 +200,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
           authorId: currentUser?.id ?? '',
           authorName: currentUser?.userName ?? '',
           authorAvatar: currentUser?.avatarUrl ?? '',
-          timeAgo: DateTime.now().toString(),
-          createdAt: DateTime.now(),
+          timeAgo: ConvertTime.formatTimestamp(now),
+          createdAt: now,
           likes: 0,
           comments: 0,
         );

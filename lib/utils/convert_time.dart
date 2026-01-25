@@ -1,18 +1,22 @@
 class ConvertTime {
   static String formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
+    // Convert cả hai về UTC để so sánh chính xác
+    final now = DateTime.now().toUtc();
+    final timestampUtc = timestamp.toUtc();
+    final difference = now.difference(timestampUtc);
 
     if (difference.inDays > 7) {
-      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+      // Hiển thị theo local time
+      final local = timestamp.toLocal();
+      return '${local.day}/${local.month}/${local.year}';
     } else if (difference.inDays >= 1) {
-      return '${difference.inDays} d ago';
+      return '${difference.inDays} d';
     } else if (difference.inHours >= 1) {
-      return '${difference.inHours} h ago';
+      return '${difference.inHours} h ';
     } else if (difference.inMinutes >= 1) {
-      return '${difference.inMinutes} min ago';
+      return '${difference.inMinutes} p';
     } else {
-      return 'Just now';
+      return 'Vừa xong';
     }
   }
 
@@ -21,13 +25,13 @@ class ConvertTime {
       final timestamp = DateTime.now().subtract(duration);
       return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
     } else if (duration.inDays >= 1) {
-      return '${duration.inDays} d ago';
+      return '${duration.inDays} d';
     } else if (duration.inHours >= 1) {
-      return '${duration.inHours} h ago';
+      return '${duration.inHours} h';
     } else if (duration.inMinutes >= 1) {
-      return '${duration.inMinutes} min ago';
+      return '${duration.inMinutes} p';
     } else {
-      return 'Just now';
+      return 'Vừa xong';
     }
   }
 }

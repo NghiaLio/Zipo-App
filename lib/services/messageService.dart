@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:maintain_chat_app/Caching/Database/Init.dart';
 import 'package:maintain_chat_app/Caching/Database/ListMessages.dart';
-import 'package:maintain_chat_app/Caching/Entity/MessageEntity.dart';
 import 'package:maintain_chat_app/models/chat_models.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
 import 'package:maintain_chat_app/repositories/messageRepo.dart';
