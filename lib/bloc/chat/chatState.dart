@@ -7,9 +7,19 @@ class ChatState extends Equatable {
   final String? error;
   final bool? deleteState;
 
-  const ChatState({this.chats = const [], this.isLoading = false, this.error, this.deleteState});
+  const ChatState({
+    this.chats = const [],
+    this.isLoading = true,
+    this.error,
+    this.deleteState,
+  });
 
-  ChatState copyWith({List<ChatItem>? chats, bool? isLoading, String? error, bool? deleteState}) {
+  ChatState copyWith({
+    List<ChatItem>? chats,
+    bool? isLoading,
+    String? error,
+    bool? deleteState,
+  }) {
     return ChatState(
       chats: chats ?? this.chats,
       isLoading: isLoading ?? this.isLoading,

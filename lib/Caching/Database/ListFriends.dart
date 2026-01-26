@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:maintain_chat_app/Caching/Entity/UserEntity.dart';
+import 'package:maintain_chat_app/Caching/Entity/ChatEntity.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 
 class IsarFriendsDao {
@@ -43,6 +44,30 @@ class IsarFriendsDao {
         // Insert new
         final entity = toUserEntity(user);
         await isar.userEntitys.put(entity);
+      }
+    });
+
+    // Đồng bộ trạng thái online vào ChatEntity
+    await _updateChatParticipantOnlineStatus(user.id, user.isOnline ?? false);
+  }
+
+  // Helper method để cập nhật trạng thái online trong ChatEntity
+  Future<void> _updateChatParticipantOnlineStatus(
+    String userId,
+    bool isOnline,
+  ) async {
+    await isar.writeTxn(() async {
+      // Lấy tất cả chat có participant là user này
+      final chats =
+          await isar.chatEntitys
+              .filter()
+              .participant((q) => q.userIdEqualTo(userId))
+              .findAll();
+
+      // Cập nhật isOnline cho tất cả chat
+      for (final chat in chats) {
+        chat.participant.isOnline = isOnline;
+        await isar.chatEntitys.put(chat);
       }
     });
   }

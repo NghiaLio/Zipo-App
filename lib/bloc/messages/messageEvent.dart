@@ -17,6 +17,7 @@ class LoadMessagesEvent extends MessageEvent {
   @override
   List<Object> get props => [chatId];
 }
+
 class UpdateListMessagesEvent extends MessageEvent {
   final List<MessageItem> listMessages;
 
@@ -65,4 +66,15 @@ class ReplyMessageEvent extends MessageEvent {
 
   @override
   List<Object> get props => [messageId, replyContent];
+}
+
+// Load more messages
+class LoadMoreMessages extends MessageEvent {
+  final String chatId;
+  final Timestamp lastTimestamp;
+
+  const LoadMoreMessages(this.chatId, this.lastTimestamp);
+
+  @override
+  List<Object> get props => [chatId, lastTimestamp];
 }

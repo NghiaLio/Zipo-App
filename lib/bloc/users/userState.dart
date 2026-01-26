@@ -14,7 +14,7 @@ class UserState extends Equatable {
     this.userApp,
     this.listFriends = const [],
     this.listFriendRequests = const [],
-    this.isLoading = false,
+    this.isLoading = true,
     this.error,
   });
 

@@ -1,5 +1,6 @@
 import 'package:maintain_chat_app/models/comments_post_models.dart';
 import 'package:maintain_chat_app/models/post_models.dart';
+import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class PostEvent extends Equatable {
@@ -85,8 +86,33 @@ class UpdateComment extends PostEvent {
   final String commentId;
   final String postId;
   final String newContent;
+  final String? mediaUrl;
+  final String? mediaType;
 
-  UpdateComment(this.commentId, this.postId, this.newContent);
+  UpdateComment(
+    this.commentId,
+    this.postId,
+    this.newContent, {
+    this.mediaUrl,
+    this.mediaType,
+  });
   @override
-  List<Object?> get props => [commentId, postId, newContent];
+  List<Object?> get props => [
+    commentId,
+    postId,
+    newContent,
+    mediaUrl,
+    mediaType,
+  ];
+}
+
+// Load more posts
+class LoadMorePosts extends PostEvent {
+  final DateTime lastCreatedAt;
+  final UserApp user;
+
+  LoadMorePosts(this.lastCreatedAt, this.user);
+
+  @override
+  List<Object?> get props => [lastCreatedAt, user];
 }

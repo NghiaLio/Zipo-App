@@ -16,6 +16,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
     on<MessagesErrorEvent>(_onMessagesError);
     on<CreateMessageEvent>(_onSendMessage);
     on<UndoMessageEvent>(_onDeleteMessage);
+    on<LoadMoreMessages>(_onLoadMoreMessages);
   }
 
   Future<void> _onLoadMessages(
@@ -94,6 +95,20 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
           error: e.toString(),
         ),
       );
+    }
+  }
+
+  void _onLoadMoreMessages(
+    LoadMoreMessages event,
+    Emitter<MessageState> emit,
+  ) async {
+    try {
+      await messageRepository.loadMoreMessages(
+        event.chatId,
+        event.lastTimestamp,
+      );
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
     }
   }
 }

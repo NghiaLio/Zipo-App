@@ -11,7 +11,7 @@ class IsarMessageDao {
     final messageEntities = isar.messageEntitys
         .where()
         .chatIdEqualTo(chatId)
-        .sortBySendAt() // Sắp xếp theo thời gian gửi tăng dần
+        .sortBySendAtDesc() // Sắp xếp theo thời gian gửi giảm dần (mới nhất trước)
         .watch(fireImmediately: true)
         .asyncMap((entities) async {
           return entities.map((item) => fromMessageEntity(item)).toList();
@@ -47,6 +47,44 @@ class IsarMessageDao {
   Future<void> clearAllMessages() async {
     await isar.writeTxn(() async {
       await isar.messageEntitys.clear();
+    });
+  }
+
+  Future<void> clearMessagesByChatId(String chatId) async {
+    await isar.writeTxn(() async {
+      await isar.messageEntitys.where().chatIdEqualTo(chatId).deleteAll();
+    });
+  }
+
+  Future<void> syncMessages(List<MessageItem> messages, String chatId) async {
+    await isar.writeTxn(() async {
+      // Clear existing messages for this chat
+      await isar.messageEntitys.where().chatIdEqualTo(chatId).deleteAll();
+
+      // Add all new messages
+      final entities = messages.map((m) => toMessageEntity(chatId, m)).toList();
+      await isar.messageEntitys.putAll(entities);
+    });
+  }
+
+  Future<void> upsertMessages(List<MessageItem> messages, String chatId) async {
+    await isar.writeTxn(() async {
+      for (var message in messages) {
+        final sendAtString = message.sendAt.toDate().toIso8601String();
+        final existingBySenderAndTime =
+            await isar.messageEntitys
+                .where()
+                .filter()
+                .senderIdEqualTo(message.senderID)
+                .and()
+                .sendAtEqualTo(sendAtString)
+                .findFirst();
+
+        if (existingBySenderAndTime == null) {
+          final entity = toMessageEntity(chatId, message);
+          await isar.messageEntitys.put(entity);
+        }
+      }
     });
   }
 

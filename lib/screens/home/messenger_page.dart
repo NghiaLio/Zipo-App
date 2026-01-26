@@ -15,7 +15,6 @@ import '../../utils/chatUtils.dart';
 import '../../utils/responsive_helper.dart';
 import '../../widgets/story_avatar.dart';
 import '../../widgets/chat_tile.dart';
-import '../../widgets/loading_placeholder.dart';
 import '../../widgets/error_placeholder.dart';
 import '../../widgets/empty_placeholder.dart';
 import '../../widgets/search_widget.dart';
@@ -126,26 +125,31 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                       previous.isLoading != current.isLoading ||
                       previous.error != current.error,
               builder: (context, state) {
-                log(state.toString());
-                if (state.isLoading) {
-                  return const LoadingPlaceholder(
-                    message: 'Đang tải danh sách bạn bè...',
-                  );
-                } else if (state.error != null) {
+                final friends = state.listFriends;
+                final isLoading = state.isLoading;
+                final error = state.error;
+
+                final storyListHeight =
+                    ResponsiveHelper.getStoryAvatarSize(context) +
+                    ResponsiveHelper.getFontSize(context, 12) +
+                    24;
+
+                if (isLoading && friends.isEmpty) {
+                  return _buildFriendsSkeleton(context, storyListHeight);
+                }
+
+                if (error != null && friends.isEmpty) {
                   return ErrorPlaceholder(
-                    message: 'Không thể tải danh sách bạn bè: ${state.error}',
+                    message: 'Không thể tải danh sách bạn bè: $error',
                     onRetry:
                         () => context.read<UserBloc>().add(
                           LoadFriendUsersEvent(),
                         ),
                   );
                 }
-                final friends = state.listFriends;
+
                 return SizedBox(
-                  height:
-                      ResponsiveHelper.getStoryAvatarSize(context) +
-                      ResponsiveHelper.getFontSize(context, 12) +
-                      24,
+                  height: storyListHeight,
                   child:
                       friends.isEmpty
                           ? const EmptyPlaceholder(
@@ -184,23 +188,25 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                         previous.isLoading != current.isLoading ||
                         previous.error != current.error,
                 builder: (context, state) {
-                  if (state.isLoading) {
-                    return const Expanded(
-                      child: LoadingPlaceholder(
-                        message: 'Đang tải tin nhắn...',
-                      ),
-                    );
-                  } else if (state.error != null) {
+                  final chatList = state.chats;
+                  final isLoading = state.isLoading;
+                  final error = state.error;
+
+                  if (isLoading && chatList.isEmpty) {
+                    return Expanded(child: _buildChatsSkeleton());
+                  }
+
+                  if (error != null && chatList.isEmpty) {
                     return Expanded(
                       child: ErrorPlaceholder(
-                        message: 'Không thể tải tin nhắn: ${state.error}',
+                        message: 'Không thể tải tin nhắn: $error',
                         onRetry:
                             () =>
                                 context.read<ChatBloc>().add(LoadChatsEvent()),
                       ),
                     );
                   }
-                  final chatList = state.chats;
+
                   return Expanded(
                     child:
                         chatList.isEmpty
@@ -222,6 +228,97 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildFriendsSkeleton(BuildContext context, double height) {
+    final avatarSize = ResponsiveHelper.getAvatarSize(context);
+    final screenPadding = ResponsiveHelper.getScreenPadding(context);
+
+    return SizedBox(
+      height: height,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: screenPadding,
+        itemCount: 5,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Column(
+              children: [
+                Container(
+                  width: avatarSize,
+                  height: avatarSize,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: avatarSize * 0.8,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildChatsSkeleton() {
+    return ListView.builder(
+      itemCount: 8,
+      padding: EdgeInsets.zero,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -6,8 +6,8 @@ abstract class MessageRepo {
   Future<void> dispose();
   Future<void> clearAllMessages();
   Stream<List<MessageItem>> loadMessages(String chatId);
-  Future<void> createMessage(MessageItem message,String chatId);
-  Future<void> undoMessage(String chatId,Timestamp sendAt);
+  Future<void> createMessage(MessageItem message, String chatId);
+  Future<void> undoMessage(String chatId, Timestamp sendAt);
   Future<void> replyMessage(String messageId, String replyContent);
-
+  Future<void> loadMoreMessages(String chatId, Timestamp lastTimestamp);
 }

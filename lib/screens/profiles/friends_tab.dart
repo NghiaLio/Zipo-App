@@ -141,62 +141,65 @@ class FriendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      ProfileDetailPage(user: friend, isViewOnly: true),
-            ),
-          );
-        },
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: CachedNetworkImageProvider(
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ProfileDetailPage(user: friend, isViewOnly: true),
+          ),
+        );
+      },
+      leading: CircleAvatar(
+        radius: 26,
+        backgroundColor: Colors.blue.shade100,
+        backgroundImage:
             friend.avatarUrl?.isNotEmpty == true
-                ? friend.avatarUrl!
-                : 'https://i.pravatar.cc/150?img=${friend.id.hashCode % 70}',
-          ),
+                ? CachedNetworkImageProvider(friend.avatarUrl!)
+                : null,
+        child:
+            friend.avatarUrl?.isEmpty == true
+                ? Icon(Icons.person, color: Colors.blue.shade700)
+                : null,
+      ),
+      title: Text(
+        friend.userName,
+        style: TextStyle(
+          fontSize: ResponsiveHelper.getFontSize(context, 16),
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
         ),
-        title: Text(
-          friend.userName,
-          style: TextStyle(
-            fontSize: ResponsiveHelper.getFontSize(context, 16),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          friend.email,
-          style: TextStyle(
-            fontSize: ResponsiveHelper.getFontSize(context, 14),
-            color: Colors.grey[600],
-          ),
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
-          onSelected: (value) {
-            if (value == 'remove') {
-              _showRemoveFriendDialog(context);
-            }
-          },
-          itemBuilder:
-              (BuildContext context) => [
-                const PopupMenuItem<String>(
-                  value: 'remove',
-                  child: Row(
-                    children: [
-                      Icon(Icons.person_remove, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Xóa bạn bè', style: TextStyle(color: Colors.red)),
-                    ],
-                  ),
+      ),
+      trailing: PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, color: Colors.grey),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        onSelected: (value) {
+          if (value == 'remove') {
+            _showRemoveFriendDialog(context);
+          }
+        },
+        itemBuilder:
+            (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'remove',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_remove_outlined,
+                      color: Colors.redAccent,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Xóa bạn bè',
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ],
                 ),
-              ],
-        ),
+              ),
+            ],
       ),
     );
   }

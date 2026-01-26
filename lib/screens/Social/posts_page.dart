@@ -23,11 +23,52 @@ class PostsPage extends StatefulWidget {
 
 class _PostsPageState extends State<PostsPage> {
   bool _hideProgressWidget = true;
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     context.read<PostBloc>().add(LoadPosts());
+    _scrollController.addListener(_onScroll);
     super.initState();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent &&
+        !_isLoadingMore) {
+      final postState = context.read<PostBloc>().state;
+      final userState = context.read<UserBloc>().state;
+
+      if (postState.posts.isNotEmpty && userState.userApp != null) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+
+        // Lấy bài viết cũ nhất (bài viết cuối trong danh sách)
+        final lastPost = postState.posts.last;
+        if (lastPost.createdAt != null) {
+          context.read<PostBloc>().add(
+            LoadMorePosts(lastPost.createdAt!, userState.userApp!),
+          );
+        }
+
+        // Reset flag sau một khoảng thời gian
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _isLoadingMore = false;
+            });
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void createNewPost() async {
@@ -207,6 +248,7 @@ class _PostsPageState extends State<PostsPage> {
                           _buildProgressWidget(),
                           Expanded(
                             child: ListView.builder(
+                              controller: _scrollController,
                               itemCount: posts.length,
                               itemBuilder: (context, index) {
                                 return PostCard(

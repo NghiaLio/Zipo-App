@@ -44,7 +44,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     LoadFriendUsersEvent event,
     Emitter<UserState> emit,
   ) async {
-    emit(UserState(isLoading: true));
+    emit(state.copyWith(isLoading: true));
 
     try {
       // Cancel previous subscription if exists

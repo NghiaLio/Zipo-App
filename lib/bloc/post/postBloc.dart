@@ -24,6 +24,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     on<CommentOnPost>(_onCommentOnPost);
     on<DeleteComment>(_onDeleteComment);
     on<UpdateComment>(_onUpdateComment);
+    on<LoadMorePosts>(_onLoadMorePosts);
   }
 
   Future<void> _onLoadPosts(LoadPosts event, Emitter<PostState> emit) async {
@@ -124,9 +125,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
       final comments = await postRepository.getAllComments(event.postId);
+      final totalComments = _countTotalComments(comments);
       emit(
         state.copyWith(
           commentsOnPost: comments,
+          totalCommentOnPost: totalComments,
           isLoading: false,
           errorMessage: null,
         ),
@@ -149,13 +152,18 @@ class PostBloc extends Bloc<PostEvent, PostState> {
           event.newComment,
         );
         emit(
-          state.copyWith(commentsOnPost: updatedComments, errorMessage: null),
+          state.copyWith(
+            commentsOnPost: updatedComments,
+            totalCommentOnPost: state.totalCommentOnPost + 1,
+            errorMessage: null,
+          ),
         );
       } else {
         // comment bình thường
         emit(
           state.copyWith(
             commentsOnPost: [...state.commentsOnPost, event.newComment],
+            totalCommentOnPost: state.totalCommentOnPost + 1,
             isLoading: false,
             errorMessage: null,
           ),
@@ -193,15 +201,41 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     }).toList();
   }
 
+  int _countTotalComments(List<Comment> comments) {
+    int total = 0;
+    for (var comment in comments) {
+      total += 1;
+      total += _countTotalComments(comment.replies);
+    }
+    return total;
+  }
+
   Future<void> _onDeleteComment(
     DeleteComment event,
     Emitter<PostState> emit,
   ) async {
     try {
       // Optimistic update: xóa comment khỏi state ngay lập tức
-      final updatedComments =
-          state.commentsOnPost.where((c) => c.id != event.commentId).toList();
-      emit(state.copyWith(commentsOnPost: updatedComments, errorMessage: null));
+      final commentToDelete = _findCommentById(
+        state.commentsOnPost,
+        event.commentId,
+      );
+      final countToRemove =
+          commentToDelete != null
+              ? 1 + _countTotalComments(commentToDelete.replies)
+              : 0;
+
+      final updatedComments = _removeCommentFromTree(
+        state.commentsOnPost,
+        event.commentId,
+      );
+      emit(
+        state.copyWith(
+          commentsOnPost: updatedComments,
+          totalCommentOnPost: state.totalCommentOnPost - countToRemove,
+          errorMessage: null,
+        ),
+      );
 
       // Gọi API xóa
       await postRepository.deleteComment(event.commentId, event.postId);
@@ -227,7 +261,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       final updatedComments =
           state.commentsOnPost.map((c) {
             if (c.id == event.commentId) {
-              return c.copyWith(content: event.newContent);
+              return c.copyWith(
+                content: event.newContent,
+                mediaUrl: event.mediaUrl,
+                mediaType: event.mediaType,
+              );
             }
             return c;
           }).toList();
@@ -238,6 +276,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
         event.commentId,
         event.postId,
         event.newContent,
+        event.mediaUrl,
+        event.mediaType,
       );
     } catch (e) {
       // Nếu lỗi, reload lại comments từ remote
@@ -249,6 +289,33 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       } catch (_) {
         emit(state.copyWith(errorMessage: e.toString()));
       }
+    }
+  }
+
+  Comment? _findCommentById(List<Comment> comments, String id) {
+    for (var comment in comments) {
+      if (comment.id == id) return comment;
+      final found = _findCommentById(comment.replies, id);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
+  List<Comment> _removeCommentFromTree(List<Comment> comments, String id) {
+    return comments
+        .where((c) => c.id != id)
+        .map((c) => c.copyWith(replies: _removeCommentFromTree(c.replies, id)))
+        .toList();
+  }
+
+  Future<void> _onLoadMorePosts(
+    LoadMorePosts event,
+    Emitter<PostState> emit,
+  ) async {
+    try {
+      await postRepository.loadMorePosts(event.user, event.lastCreatedAt);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: e.toString()));
     }
   }
 

@@ -17,6 +17,7 @@ import 'package:maintain_chat_app/widgets/TopSnackBar.dart';
 import 'package:video_player/video_player.dart';
 import '../../widgets/video_player_widget.dart';
 import '../../models/comments_post_models.dart';
+import '../../widgets/media_viewer_page.dart';
 
 class CommentBottomSheet extends StatefulWidget {
   final String postId;
@@ -42,11 +43,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   bool isFailLoading = false;
   String? _editingCommentId;
+  String? _editingMediaUrl;
+  XFile? _editingMediaFile;
+  String? _editingMediaType;
   final Map<String, TextEditingController> _editControllers = {};
   final Map<String, FocusNode> _editFocusNodes = {};
   final FileService _fileService = FileService();
   final ImagePicker _imagePicker = ImagePicker();
   VideoPlayerController? _videoPreviewController;
+  VideoPlayerController? _editVideoPreviewController;
 
   @override
   void initState() {
@@ -66,6 +71,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     for (var focusNode in _editFocusNodes.values) {
       focusNode.dispose();
     }
+    _editVideoPreviewController?.dispose();
     super.dispose();
   }
 
@@ -148,7 +154,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     });
   }
 
-  void _showMediaPicker() {
+  void _showMediaPicker({bool isEditing = false}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -180,7 +186,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     title: const Text('Chọn ảnh'),
                     onTap: () {
                       Navigator.pop(context);
-                      _pickImage();
+                      _pickImage(isEditing: isEditing);
                     },
                   ),
                   ListTile(
@@ -191,7 +197,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     title: const Text('Chọn video'),
                     onTap: () {
                       Navigator.pop(context);
-                      _pickVideo();
+                      _pickVideo(isEditing: isEditing);
                     },
                   ),
                   const SizedBox(height: 8),
@@ -202,15 +208,21 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     );
   }
 
-  void _pickImage() async {
+  void _pickImage({bool isEditing = false}) async {
     try {
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
       );
       if (image != null) {
         setState(() {
-          _selectedMediaFile = image;
-          _selectedMediaType = 'image';
+          if (isEditing) {
+            _editingMediaFile = image;
+            _editingMediaType = 'image';
+            _editingMediaUrl = null;
+          } else {
+            _selectedMediaFile = image;
+            _selectedMediaType = 'image';
+          }
         });
       }
     } catch (e) {
@@ -218,23 +230,34 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     }
   }
 
-  void _pickVideo() async {
+  void _pickVideo({bool isEditing = false}) async {
     try {
       final XFile? video = await _imagePicker.pickVideo(
         source: ImageSource.gallery,
       );
       if (video != null) {
-        // Dispose controller cũ nếu có
-        _videoPreviewController?.dispose();
-
-        // Tạo controller mới cho video local
-        _videoPreviewController = VideoPlayerController.file(File(video.path));
-        await _videoPreviewController!.initialize();
-
-        setState(() {
-          _selectedMediaFile = video;
-          _selectedMediaType = 'video';
-        });
+        if (isEditing) {
+          _editVideoPreviewController?.dispose();
+          _editVideoPreviewController = VideoPlayerController.file(
+            File(video.path),
+          );
+          await _editVideoPreviewController!.initialize();
+          setState(() {
+            _editingMediaFile = video;
+            _editingMediaType = 'video';
+            _editingMediaUrl = null;
+          });
+        } else {
+          _videoPreviewController?.dispose();
+          _videoPreviewController = VideoPlayerController.file(
+            File(video.path),
+          );
+          await _videoPreviewController!.initialize();
+          setState(() {
+            _selectedMediaFile = video;
+            _selectedMediaType = 'video';
+          });
+        }
       }
     } catch (e) {
       showSnackBar.show_error(
@@ -244,18 +267,32 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     }
   }
 
-  void _removeMedia() {
-    _videoPreviewController?.dispose();
-    _videoPreviewController = null;
-    setState(() {
-      _selectedMediaFile = null;
-      _selectedMediaType = null;
-    });
+  void _removeMedia({bool isEditing = false}) {
+    if (isEditing) {
+      _editVideoPreviewController?.dispose();
+      _editVideoPreviewController = null;
+      setState(() {
+        _editingMediaFile = null;
+        _editingMediaType = null;
+        _editingMediaUrl = null;
+      });
+    } else {
+      _videoPreviewController?.dispose();
+      _videoPreviewController = null;
+      setState(() {
+        _selectedMediaFile = null;
+        _selectedMediaType = null;
+      });
+    }
   }
 
   void _editComment(Comment comment) {
     setState(() {
       _editingCommentId = comment.id;
+      _editingMediaUrl = comment.mediaUrl;
+      _editingMediaType = comment.mediaType;
+      _editingMediaFile = null;
+
       if (!_editControllers.containsKey(comment.id)) {
         _editControllers[comment.id!] = TextEditingController(
           text: comment.content,
@@ -269,21 +306,66 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     });
   }
 
-  void _saveEditComment(Comment comment) {
+  void _saveEditComment(Comment comment) async {
     final newContent = _editControllers[comment.id]?.text.trim() ?? '';
-    if (newContent.isNotEmpty && newContent != comment.content) {
-      context.read<PostBloc>().add(
-        UpdateComment(comment.id ?? '', widget.postId, newContent),
-      );
+
+    // Nếu có media mới, upload lên storage trước
+    String? uploadedMediaUrl = _editingMediaUrl;
+    String? mediaType = _editingMediaType;
+
+    if (_editingMediaFile != null) {
+      try {
+        final bucketName =
+            _editingMediaType == 'image'
+                ? POST_IMAGE_BUCKET
+                : POST_VIDEO_BUCKET;
+        final folderPath =
+            _editingMediaType == 'image' ? 'comment_images' : 'comment_videos';
+
+        uploadedMediaUrl = await FileService.processFilePicked(
+          _editingMediaFile,
+          _editingMediaType == 'image' ? MessageType.Image : MessageType.Video,
+          folderPath,
+          _editingMediaFile!.name,
+          bucketName,
+        );
+      } catch (e) {
+        showSnackBar.show_error(
+          'Tải lên media thất bại. Vui lòng thử lại.',
+          context,
+        );
+        return;
+      }
     }
-    setState(() {
-      _editingCommentId = null;
-    });
+
+    if (newContent.isNotEmpty) {
+      if (newContent != comment.content ||
+          uploadedMediaUrl != comment.mediaUrl ||
+          mediaType != comment.mediaType) {
+        context.read<PostBloc>().add(
+          UpdateComment(
+            comment.id ?? '',
+            widget.postId,
+            newContent,
+            mediaUrl: uploadedMediaUrl,
+            mediaType: mediaType,
+          ),
+        );
+      }
+      _cancelEditComment();
+    } else {
+      showSnackBar.show_error('Bình luận không thể để trống', context);
+    }
   }
 
   void _cancelEditComment() {
+    _editVideoPreviewController?.dispose();
+    _editVideoPreviewController = null;
     setState(() {
       _editingCommentId = null;
+      _editingMediaUrl = null;
+      _editingMediaFile = null;
+      _editingMediaType = null;
     });
   }
 
@@ -554,7 +636,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Bình luận (${_comments.length})',
+                                'Bình luận (${state.totalCommentOnPost})',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -877,6 +959,141 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       const SizedBox(height: 4),
                       // N\u1ebfu \u0111ang edit comment n\u00e0y -> hi\u1ec3n th\u1ecb TextField
                       if (_editingCommentId == comment.id) ...[
+                        GestureDetector(
+                          onTap: () => _showMediaPicker(isEditing: true),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                if (_editingMediaUrl != null ||
+                                    _editingMediaFile != null) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child:
+                                        _editingMediaFile != null
+                                            ? (_editingMediaType == 'image'
+                                                ? Image.file(
+                                                  File(_editingMediaFile!.path),
+                                                  width: 150,
+                                                  height: 150,
+                                                  fit: BoxFit.cover,
+                                                )
+                                                : _editVideoPreviewController !=
+                                                        null &&
+                                                    _editVideoPreviewController!
+                                                        .value
+                                                        .isInitialized
+                                                ? SizedBox(
+                                                  width: 200,
+                                                  height: 150,
+                                                  child: AspectRatio(
+                                                    aspectRatio:
+                                                        _editVideoPreviewController!
+                                                            .value
+                                                            .aspectRatio,
+                                                    child: VideoPlayer(
+                                                      _editVideoPreviewController!,
+                                                    ),
+                                                  ),
+                                                )
+                                                : Container(
+                                                  width: 200,
+                                                  height: 150,
+                                                  color: Colors.grey[300],
+                                                  child: const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                ))
+                                            : (_editingMediaType == 'image'
+                                                ? CachedNetworkImage(
+                                                  imageUrl: _editingMediaUrl!,
+                                                  width: 150,
+                                                  height: 150,
+                                                  fit: BoxFit.cover,
+                                                )
+                                                : VideoPlayerWidget(
+                                                  videoUrl: _editingMediaUrl!,
+                                                  width: 200,
+                                                  height: 150,
+                                                )),
+                                  ),
+                                  // Overlay indicators
+                                  Container(
+                                    width:
+                                        _editingMediaType == 'image'
+                                            ? 150
+                                            : 200,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black26,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white70,
+                                      size: 30,
+                                    ),
+                                  ),
+                                  // Close button
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: GestureDetector(
+                                      onTap:
+                                          () => _removeMedia(isEditing: true),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  // Placeholder when no media
+                                  Container(
+                                    width: 150,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey[300]!,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_photo_alternate_outlined,
+                                          color: Colors.grey[400],
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Thêm ảnh/video',
+                                          style: TextStyle(
+                                            color: Colors.grey[500],
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
                         Container(
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
@@ -965,47 +1182,81 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         ),
                       ],
                       if (comment.mediaUrl != null &&
-                          comment.mediaType == 'image')
+                          comment.mediaType == 'image' &&
+                          _editingCommentId != comment.id)
                         const SizedBox(height: 8),
                       if (comment.mediaUrl != null &&
-                          comment.mediaType == 'image')
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: comment.mediaUrl!,
-                            width: 200,
-                            fit: BoxFit.cover,
-                            placeholder:
-                                (context, url) => Container(
-                                  width: 200,
-                                  height: 150,
-                                  color: Colors.grey[200],
-                                  child: const Center(
-                                    child: CircularProgressIndicator(),
+                          comment.mediaType == 'image' &&
+                          _editingCommentId != comment.id)
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => MediaViewerPage(
+                                      url: comment.mediaUrl!,
+                                      mediaType: 'image',
+                                      userName: comment.userName,
+                                      userAvatar: comment.userAvatar,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: comment.mediaUrl!,
+                              width: 200,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => Container(
+                                    width: 200,
+                                    height: 150,
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
                                   ),
-                                ),
-                            errorWidget:
-                                (context, url, error) => Container(
-                                  width: 200,
-                                  height: 150,
-                                  color: Colors.grey[300],
-                                  child: const Center(
-                                    child: Icon(Icons.broken_image),
+                              errorWidget:
+                                  (context, url, error) => Container(
+                                    width: 200,
+                                    height: 150,
+                                    color: Colors.grey[300],
+                                    child: const Center(
+                                      child: Icon(Icons.broken_image),
+                                    ),
                                   ),
-                                ),
+                            ),
                           ),
                         ),
                       if (comment.mediaUrl != null &&
-                          comment.mediaType == 'video')
+                          comment.mediaType == 'video' &&
+                          _editingCommentId != comment.id)
                         const SizedBox(height: 8),
                       if (comment.mediaUrl != null &&
-                          comment.mediaType == 'video')
+                          comment.mediaType == 'video' &&
+                          _editingCommentId != comment.id)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: VideoPlayerWidget(
                             videoUrl: comment.mediaUrl!,
                             width: 250,
                             height: 180,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => MediaViewerPage(
+                                        url: comment.mediaUrl!,
+                                        mediaType: 'video',
+                                        userName: comment.userName,
+                                        userAvatar: comment.userAvatar,
+                                      ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       const SizedBox(height: 6),

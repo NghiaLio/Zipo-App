@@ -18,5 +18,8 @@ abstract class PostRepo {
     String commentId,
     String postId,
     String newContent,
+    String? mediaUrl,
+    String? mediaType,
   );
+  Future<void> loadMorePosts(UserApp user, DateTime lastCreatedAt);
 }

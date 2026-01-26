@@ -40,26 +40,50 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
   bool _isUploadingVideo = false;
   bool _isRecordingAudio = false;
   bool _isUploadingAudio = false;
-  bool _isFirstLoad = true;
+  Map<String, String>? _replyingTo;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     // Khởi tạo MessageService và load messages
     final messageBloc = context.read<MessageBloc>();
     messageBloc.messageRepository.init(widget.chatId, widget.user.id);
     messageBloc.add(LoadMessagesEvent(widget.chatId));
   }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients && mounted) {
-      _scrollController.jumpTo(0); // Jump ngay lập tức không có animation
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent &&
+        !_isLoadingMore) {
+      final state = context.read<MessageBloc>().state;
+      if (state.listMessages.isNotEmpty) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+        // Lấy tin nhắn cũ nhất (vì reverse: true nên item cuối của list là tin nhắn cũ nhất)
+        final lastMessage = state.listMessages.last;
+        context.read<MessageBloc>().add(
+          LoadMoreMessages(widget.chatId, lastMessage.sendAt),
+        );
+
+        // Reset flag sau một khoảng thời gian hoặc khi state thay đổi
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            setState(() {
+              _isLoadingMore = false;
+            });
+          }
+        });
+      }
     }
   }
 
   void sendMessageText() async {
-    setState(() {});
     final content = _textController.text.trim();
+    if (content.isEmpty) return;
+
     final MessageItem newMessage = MessageItem(
       senderID: _firebaseAuth.currentUser?.uid ?? '',
       content: content,
@@ -67,11 +91,46 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
       sendAt: Timestamp.fromDate(DateTime.now()),
       isSeen: false,
       isLatest: true,
+      replyingTo: _replyingTo,
     );
-    if (content.isNotEmpty) {
-      final messageBloc = context.read<MessageBloc>();
-      messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+
+    final messageBloc = context.read<MessageBloc>();
+    messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+
+    setState(() {
       _textController.clear();
+      _replyingTo = null; // Clear reply state after sending
+    });
+  }
+
+  void _onReply(MessageItem message) {
+    setState(() {
+      _replyingTo = {
+        'authorMessage':
+            message.senderID == _firebaseAuth.currentUser?.uid
+                ? 'Tôi'
+                : widget.user.userName,
+        'content': _getReplyMetadata(message),
+      };
+    });
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingTo = null;
+    });
+  }
+
+  String _getReplyMetadata(MessageItem message) {
+    switch (message.type) {
+      case MessageType.Text:
+        return message.content;
+      case MessageType.Image:
+        return '[Hình ảnh]';
+      case MessageType.Video:
+        return '[Video]';
+      case MessageType.Audio:
+        return '[Audio]';
     }
   }
 
@@ -420,16 +479,6 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
               final List<MessageItem> messages = state.listMessages;
               log(messages.toString());
 
-              // Jump to bottom chỉ lần đầu load
-              if (_isFirstLoad && messages.isNotEmpty) {
-                _isFirstLoad = false;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
-                    _scrollController.jumpTo(0);
-                  }
-                });
-              }
-
               return Column(
                 children: [
                   messages.isEmpty
@@ -452,7 +501,7 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                           reverse: true,
                           controller: _scrollController,
                           padding: const EdgeInsets.all(16),
-                          physics: const ClampingScrollPhysics(),
+                          physics: const BouncingScrollPhysics(),
                           itemCount:
                               messages.length +
                               (_isUploadingImage ? 1 : 0) +
@@ -484,20 +533,30 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                                 Icons.image,
                               );
                             }
-                            // Tính toán index thực cho messages (đảo ngược)
+
+                            // Tính toán index cho messages
+                            // Vì list đã được sắp xếp mới nhất ở đầu (index 0)
+                            // Và ListView reverse: true nên index 0 của ListView là ở BOTTOM
+                            // Chúng ta trừ đi số lượng uploading placeholders
                             final messageIndex =
-                                messages.length -
-                                1 -
-                                (index -
-                                    (_isUploadingImage ? 1 : 0) -
-                                    (_isUploadingVideo ? 1 : 0) -
-                                    (_isUploadingAudio ? 1 : 0));
+                                index -
+                                (_isUploadingImage ? 1 : 0) -
+                                (_isUploadingVideo ? 1 : 0) -
+                                (_isUploadingAudio ? 1 : 0);
+
+                            if (messageIndex < 0 ||
+                                messageIndex >= messages.length) {
+                              return const SizedBox.shrink();
+                            }
+
                             // Hiển thị message bình thường
                             return MessageBubble(
                               message: messages[messageIndex],
                               currentUserId:
                                   _firebaseAuth.currentUser?.uid ?? '',
                               chatId: widget.chatId,
+                              recipientUser: widget.user,
+                              onReply: _onReply,
                             );
                           },
                         ),
@@ -512,6 +571,8 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                         textController: _textController,
                         onSendMessage: sendMessageText,
                         onAttachmentPressed: showAttachmentOptions,
+                        replyingTo: _replyingTo,
+                        onCancelReply: _cancelReply,
                       ),
                 ],
               );

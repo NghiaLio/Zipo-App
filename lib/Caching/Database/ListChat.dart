@@ -79,4 +79,25 @@ class IsarChatDao {
   //     }
   //   });
   // }
+
+  // Cập nhật trạng thái online của participant trong tất cả chat
+  Future<void> updateParticipantOnlineStatus(
+    String userId,
+    bool isOnline,
+  ) async {
+    await isar.writeTxn(() async {
+      // Lấy tất cả chat có participant là user này
+      final chats =
+          await isar.chatEntitys
+              .filter()
+              .participant((q) => q.userIdEqualTo(userId))
+              .findAll();
+
+      // Cập nhật isOnline cho tất cả chat
+      for (final chat in chats) {
+        chat.participant.isOnline = isOnline;
+        await isar.chatEntitys.put(chat);
+      }
+    });
+  }
 }

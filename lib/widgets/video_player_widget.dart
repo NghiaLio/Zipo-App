@@ -5,12 +5,14 @@ class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final double? width;
   final double? height;
+  final VoidCallback? onTap;
 
   const VideoPlayerWidget({
     super.key,
     required this.videoUrl,
     this.width,
     this.height,
+    this.onTap,
   });
 
   @override
@@ -80,13 +82,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _controller.value.isPlaying
-              ? _controller.pause()
-              : _controller.play();
-        });
-      },
+      onTap:
+          widget.onTap ??
+          () {
+            setState(() {
+              _controller.value.isPlaying
+                  ? _controller.pause()
+                  : _controller.play();
+            });
+          },
       child: Container(
         width: widget.width,
         height: widget.height,

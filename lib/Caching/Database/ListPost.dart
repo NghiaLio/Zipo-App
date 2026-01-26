@@ -20,58 +20,70 @@ class IsarPost {
 
   Future<void> upsert(PostItem post) async {
     await isar.writeTxn(() async {
-      // Ưu tiên check bằng clientId (unique per post from client)
-      if (post.clientId != null && post.clientId!.isNotEmpty) {
-        final existingByClientId =
-            await isar.postEntitys
-                .where()
-                .clientIdEqualTo(post.clientId!)
-                .findFirst();
-
-        if (existingByClientId != null) {
-          // Tìm thấy bằng clientId - Update (bao gồm postId từ remote)
-          existingByClientId.postId = post.id ?? existingByClientId.postId;
-          existingByClientId.authorName = post.authorName;
-          existingByClientId.authorAvatar = post.authorAvatar;
-          existingByClientId.content = post.content;
-          existingByClientId.imageUrl = post.imageUrl;
-          existingByClientId.timeAgo = post.timeAgo;
-          existingByClientId.createdAt =
-              post.createdAt ?? existingByClientId.createdAt;
-          existingByClientId.likes = post.likes;
-          existingByClientId.comments = post.comments;
-          // Không update isLiked khi sync từ remote, để giữ trạng thái local toggle
-          await isar.postEntitys.put(existingByClientId);
-          return;
-        }
-      }
-
-      // Fallback: check bằng postId nếu có và không empty
-      if (post.id != null && post.id!.isNotEmpty) {
-        final existingById =
-            await isar.postEntitys.where().postIdEqualTo(post.id!).findFirst();
-
-        if (existingById != null) {
-          // Update existing by postId
-          existingById.clientId = post.clientId ?? existingById.clientId;
-          existingById.authorName = post.authorName;
-          existingById.authorAvatar = post.authorAvatar;
-          existingById.content = post.content;
-          existingById.imageUrl = post.imageUrl;
-          existingById.timeAgo = post.timeAgo;
-          existingById.createdAt = post.createdAt ?? existingById.createdAt;
-          existingById.likes = post.likes;
-          existingById.comments = post.comments;
-          // Không update isLiked khi sync từ remote
-          await isar.postEntitys.put(existingById);
-          return;
-        }
-      }
-
-      // Insert new
-      final entity = toPostEntity(post);
-      await isar.postEntitys.put(entity);
+      await _upsertSinglePost(post);
     });
+  }
+
+  Future<void> upsertPosts(List<PostItem> posts) async {
+    await isar.writeTxn(() async {
+      for (var post in posts) {
+        await _upsertSinglePost(post);
+      }
+    });
+  }
+
+  Future<void> _upsertSinglePost(PostItem post) async {
+    // Ưu tiên check bằng clientId (unique per post from client)
+    if (post.clientId != null && post.clientId!.isNotEmpty) {
+      final existingByClientId =
+          await isar.postEntitys
+              .where()
+              .clientIdEqualTo(post.clientId!)
+              .findFirst();
+
+      if (existingByClientId != null) {
+        // Tìm thấy bằng clientId - Update (bao gồm postId từ remote)
+        existingByClientId.postId = post.id ?? existingByClientId.postId;
+        existingByClientId.authorName = post.authorName;
+        existingByClientId.authorAvatar = post.authorAvatar;
+        existingByClientId.content = post.content;
+        existingByClientId.imageUrl = post.imageUrl;
+        existingByClientId.timeAgo = post.timeAgo;
+        existingByClientId.createdAt =
+            post.createdAt ?? existingByClientId.createdAt;
+        existingByClientId.likes = post.likes;
+        existingByClientId.comments = post.comments;
+        // Không update isLiked khi sync từ remote, để giữ trạng thái local toggle
+        await isar.postEntitys.put(existingByClientId);
+        return;
+      }
+    }
+
+    // Fallback: check bằng postId nếu có và không empty
+    if (post.id != null && post.id!.isNotEmpty) {
+      final existingById =
+          await isar.postEntitys.where().postIdEqualTo(post.id!).findFirst();
+
+      if (existingById != null) {
+        // Update existing by postId
+        existingById.clientId = post.clientId ?? existingById.clientId;
+        existingById.authorName = post.authorName;
+        existingById.authorAvatar = post.authorAvatar;
+        existingById.content = post.content;
+        existingById.imageUrl = post.imageUrl;
+        existingById.timeAgo = post.timeAgo;
+        existingById.createdAt = post.createdAt ?? existingById.createdAt;
+        existingById.likes = post.likes;
+        existingById.comments = post.comments;
+        // Không update isLiked khi sync từ remote
+        await isar.postEntitys.put(existingById);
+        return;
+      }
+    }
+
+    // Insert new
+    final entity = toPostEntity(post);
+    await isar.postEntitys.put(entity);
   }
 
   // get post by id

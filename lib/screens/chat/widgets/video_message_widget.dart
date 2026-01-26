@@ -3,8 +3,9 @@ import 'package:video_player/video_player.dart';
 
 class VideoMessageWidget extends StatefulWidget {
   final String videoUrl;
+  final VoidCallback? onTap;
 
-  const VideoMessageWidget({super.key, required this.videoUrl});
+  const VideoMessageWidget({super.key, required this.videoUrl, this.onTap});
 
   @override
   State<VideoMessageWidget> createState() => _VideoMessageWidgetState();
@@ -40,7 +41,6 @@ class _VideoMessageWidgetState extends State<VideoMessageWidget> {
           }
         });
 
-    // Lắng nghe lỗi trong quá trình phát
     _controller.addListener(() {
       if (_controller.value.hasError && mounted) {
         setState(() {
@@ -58,53 +58,63 @@ class _VideoMessageWidgetState extends State<VideoMessageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      width: 250,
-      height: 250 * (9 / 16),
-      child:
-          _hasError
-              ? Container(
-                color: Colors.grey[800],
-                child: const Center(
-                  child: Icon(
-                    Icons.error_outline,
-                    color: Colors.white54,
-                    size: 50,
-                  ),
-                ),
-              )
-              : _initialized
-              ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isPlaying ? Icons.pause_circle : Icons.play_circle,
-                      color: Colors.white,
+    return GestureDetector(
+      onTap:
+          widget.onTap ??
+          () {
+            setState(() {
+              if (_controller.value.isPlaying) {
+                _controller.pause();
+                _isPlaying = false;
+              } else {
+                _controller.play();
+                _isPlaying = true;
+              }
+            });
+          },
+      child: Container(
+        color: Colors.black,
+        width: 250,
+        height: 250 * (9 / 16),
+        child:
+            _hasError
+                ? Container(
+                  color: Colors.grey[800],
+                  child: const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      color: Colors.white54,
                       size: 50,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        if (_controller.value.isPlaying) {
-                          _controller.pause();
-                          _isPlaying = false;
-                        } else {
-                          _controller.play();
-                          _isPlaying = true;
-                        }
-                      });
-                    },
                   ),
-                ],
-              )
-              : const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+                )
+                : _initialized
+                ? Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
+                    if (!_isPlaying)
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.black38,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+                  ],
+                )
+                : const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+      ),
     );
   }
 }

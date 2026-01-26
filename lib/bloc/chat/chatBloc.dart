@@ -23,7 +23,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     LoadChatsEvent event,
     Emitter<ChatState> emit,
   ) async {
-    emit(ChatState(isLoading: true));
+    emit(state.copyWith(isLoading: true));
 
     try {
       // Cancel previous subscription if exists
@@ -42,16 +42,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         },
       );
     } catch (e) {
-      emit(ChatState(error: e.toString()));
+      emit(state.copyWith(error: e.toString(), isLoading: false));
     }
   }
 
   void _onChatsUpdated(ChatsUpdatedEvent event, Emitter<ChatState> emit) {
-    emit(ChatState(chats: event.chats, isLoading: false));
+    emit(state.copyWith(chats: event.chats, isLoading: false, error: null));
   }
 
   void _onChatsError(ChatsErrorEvent event, Emitter<ChatState> emit) {
-    emit(ChatState(error: event.error, isLoading: false));
+    emit(state.copyWith(error: event.error, isLoading: false));
   }
 
   Future<void> _onUnloadChats(
@@ -73,9 +73,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       await chatRepository.deleteChat(event.chatId);
 
       // Sau khi xóa, stream sẽ tự động cập nhật danh sách chat
-      emit(
-        state.copyWith(deleteState: true, isLoading: false),
-      );
+      emit(state.copyWith(deleteState: true, isLoading: false));
     } catch (e) {
       emit(
         state.copyWith(
@@ -106,12 +104,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (chatId.isNotEmpty) {
         // Chat đã được tạo thành công, stream sẽ tự động cập nhật
         // Không cần gọi LoadChatsEvent vì đã có stream đang lắng nghe
-        emit(
-          state.copyWith(
-            isLoading: false,
-            deleteState: null,
-          ),
-        );
+        emit(state.copyWith(isLoading: false, deleteState: null));
       } else {
         emit(state.copyWith(error: 'Failed to create chat', isLoading: false));
       }

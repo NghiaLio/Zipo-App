@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:maintain_chat_app/Caching/Database/Init.dart';
 import 'package:maintain_chat_app/Caching/Database/ListMessages.dart';
@@ -177,11 +178,43 @@ class MessageService implements MessageRepo {
     await _updateSeenStatus(chatId, participantId);
   }
 
+  @override
+  Future<void> loadMoreMessages(String chatId, Timestamp lastTimestamp) async {
+    try {
+      // Vì Firestore đang lưu cả list message trong 1 document
+      final snapshot =
+          await _firebaseFirestore.collection('Chats').doc(chatId).get();
+
+      if (!snapshot.exists || snapshot.data() == null) return;
+
+      final chatResponse = ChatResponse.fromJson(snapshot.data()!);
+      final List<MessageItem> allMessages = chatResponse.chats;
+
+      // Sắp xếp theo sendAt giảm dần (mới nhất trước) để dễ lấy phần "cũ hơn"
+      allMessages.sort((a, b) => b.sendAt.compareTo(a.sendAt));
+
+      // Lọc ra những message cũ hơn lastTimestamp
+      final olderMessages =
+          allMessages.where((m) {
+            return m.sendAt.compareTo(lastTimestamp) < 0;
+          }).toList();
+
+      // Lấy 20 cái tiếp theo
+      final nextChunk = olderMessages.take(20).toList();
+
+      if (nextChunk.isNotEmpty) {
+        // Lưu vào cache
+        await _isarMessageDao.upsertMessages(nextChunk, chatId);
+      }
+    } catch (e) {
+      log('Error loading more messages: $e');
+    }
+  }
+
   void _startRemoteSync(String chatId) {
     _remoteSub ??= _firebaseFirestore
         .collection('Chats')
         .where('ID_Room', isEqualTo: chatId)
-        // .orderBy('sendAt', descending: true)
         .snapshots()
         .listen((snapshot) async {
           for (final change in snapshot.docChanges) {
@@ -193,16 +226,12 @@ class MessageService implements MessageRepo {
             // Sắp xếp theo sendAt tăng dần (message cũ nhất trước)
             messages.sort((a, b) => a.sendAt.compareTo(b.sendAt));
 
-            // Lấy 20 messages cuối cùng (mới nhất)
+            // Sync 20 messages mới nhất vào Isar
             int startIndex = (messages.length - 20).clamp(0, messages.length);
-            List<MessageItem> last20 = messages.sublist(startIndex);
+            List<MessageItem> latestChunk = messages.sublist(startIndex);
 
-            // Clear chỉ 1 lần trước khi insert tất cả messages
-            await _isarMessageDao.clearAllMessages();
-
-            for (final message in last20) {
-              await _isarMessageDao.upsert(message, chatId);
-            }
+            // Sử dụng upsertMessages thay vì syncMessages để không xóa messages cũ đã load
+            await _isarMessageDao.upsertMessages(latestChunk, chatId);
           }
         });
   }

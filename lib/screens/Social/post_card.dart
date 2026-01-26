@@ -3,8 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:maintain_chat_app/screens/Social/comment_bottom_sheet.dart';
 import '../../models/post_models.dart';
 import 'create_post_page.dart';
-
 import '../../widgets/video_player_widget.dart';
+import '../../widgets/media_viewer_page.dart';
 
 class PostCard extends StatelessWidget {
   final PostItem post;
@@ -22,15 +22,6 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Debug log
-    print('🔍 PostCard Debug:');
-    print('   Post ID: ${post.id}');
-    print('   Post User ID: ${post.user?.id}');
-    print('   Current User ID: $currentUserId');
-    print(
-      '   Should show menu: ${currentUserId != null && post.user?.id == currentUserId}',
-    );
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       color: Colors.white,
@@ -90,32 +81,64 @@ class PostCard extends StatelessWidget {
                   videoUrl: post.imageUrl,
                   width: double.infinity,
                   height: 300,
-                )
-                : CachedNetworkImage(
-                  imageUrl: post.imageUrl,
-                  width: double.infinity,
-                  height: 300,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) => Container(
-                        width: double.infinity,
-                        height: 300,
-                        color: Colors.grey[200],
-                        child: const Center(child: CircularProgressIndicator()),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => MediaViewerPage(
+                              url: post.imageUrl,
+                              mediaType: 'video',
+                              userName: post.authorName,
+                              userAvatar: post.authorAvatar,
+                            ),
                       ),
-                  errorWidget:
-                      (context, url, error) => Container(
-                        width: double.infinity,
-                        height: 300,
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 50,
-                            color: Colors.grey,
+                    );
+                  },
+                )
+                : GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => MediaViewerPage(
+                              url: post.imageUrl,
+                              mediaType: 'image',
+                              userName: post.authorName,
+                              userAvatar: post.authorAvatar,
+                            ),
+                      ),
+                    );
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: post.imageUrl,
+                    width: double.infinity,
+                    height: 300,
+                    fit: BoxFit.cover,
+                    placeholder:
+                        (context, url) => Container(
+                          width: double.infinity,
+                          height: 300,
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(),
                           ),
                         ),
-                      ),
+                    errorWidget:
+                        (context, url, error) => Container(
+                          width: double.infinity,
+                          height: 300,
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                  ),
                 ),
           Padding(
             padding: const EdgeInsets.all(12),

@@ -71,10 +71,16 @@ class PostService implements PostRepo {
     String commentId,
     String postId,
     String newContent,
+    String? mediaUrl,
+    String? mediaType,
   ) async {
     try {
       await databaseComment
-          .update({'content': newContent})
+          .update({
+            'content': newContent,
+            'media_url': mediaUrl ?? '',
+            'mediaType': mediaType,
+          })
           .eq('id', int.parse(commentId));
       log('Comment updated successfully');
     } catch (e) {
@@ -269,53 +275,100 @@ class PostService implements PostRepo {
 
   // Function to start remote sync from Supabase to local Isar database
 
-  void _startRemoteSync(UserApp user) {
-    _remoteSub ??= databasePost.stream(primaryKey: ["id"]).listen((
-      event,
-    ) async {
-      // Xử lý dữ liệu từ Supabase và đồng bộ với cơ sở dữ liệu cục bộ
-      // convert sang PostResponse
-      final List<PostResponse> posts =
-          event.map((json) => PostResponse.fromJson(json)).toList();
+  @override
+  Future<void> loadMorePosts(UserApp user, DateTime lastCreatedAt) async {
+    try {
+      // Fetch posts older than lastCreatedAt
+      final response = await databasePost
+          .select()
+          .lt('created_at', lastCreatedAt.toIso8601String())
+          .order('created_at', ascending: false)
+          .limit(10);
 
-      // Sắp xếp lại theo giảm dần của created_at
-      posts.sort((a, b) => b.created_at.compareTo(a.created_at));
+      final List<PostResponse> postResponses =
+          response.map((json) => PostResponse.fromJson(json)).toList();
 
-      // Lấy khoảng 10 bài viết đầu tiên cho cache
-      for (int i = 0; i < posts.length && i < 10; i++) {
-        final PostResponse postResponse = posts[i];
+      List<PostItem> postsToCache = [];
 
-        // Lấy các bài viết mà userid có trong listFriends của user
+      for (var postResponse in postResponses) {
+        // Lọc theo listFriends tương tự sync
         if (!user.friends!.contains(postResponse.user_id) &&
             postResponse.user_id != user.id) {
-          log(
-            'Bỏ qua bài viết không phải của bạn bè hoặc chính user: ${postResponse.id}',
-          );
-          continue; // Bỏ qua nếu không phải bài viết của bạn bè hoặc của chính user
+          continue;
         }
 
-        final UserApp? authorPost = await _userRepo.getUserById(
-          postResponse.user_id,
-        );
+        final authorPost = await _userRepo.getUserById(postResponse.user_id);
         if (authorPost != null) {
-          final PostItem post = mapPostResponseToPostItem(
+          final post = mapPostResponseToPostItem(
             postResponse,
             authorPost.userName,
             authorPost.avatarUrl ?? '',
             authorPost,
           );
+
           // Check like status
           final likedPosts = await _getLikedPostIdsByUser(
             _auth.currentUser?.uid ?? '',
           );
+          post.isLiked = likedPosts.any(
+            (like) => like.postId == int.parse(post.id ?? '0'),
+          );
 
-          post.isLiked = likedPosts.any((like) => like.postId == post.id);
-          // Lưu post vào cơ sở dữ liệu cục bộ
-          _isarPost.upsert(post);
-          log('Đã lưu bài viết: ${postResponse.id} của ${authorPost.userName}');
-        } else {
-          log('Không tìm thấy user cho bài viết: ${postResponse.id}');
+          postsToCache.add(post);
         }
+      }
+
+      if (postsToCache.isNotEmpty) {
+        await _isarPost.upsertPosts(postsToCache);
+        log('Loaded more ${postsToCache.length} posts into cache');
+      }
+    } catch (e) {
+      log('Error loading more posts: $e');
+    }
+  }
+
+  void _startRemoteSync(UserApp user) {
+    _remoteSub ??= databasePost.stream(primaryKey: ["id"]).listen((
+      event,
+    ) async {
+      final List<PostResponse> posts =
+          event.map((json) => PostResponse.fromJson(json)).toList();
+
+      posts.sort((a, b) => b.created_at.compareTo(a.created_at));
+
+      List<PostItem> latestPosts = [];
+
+      // Lấy 10 bài viết mới nhất để sync tự động
+      for (int i = 0; i < posts.length && i < 10; i++) {
+        final postResponse = posts[i];
+
+        if (!user.friends!.contains(postResponse.user_id) &&
+            postResponse.user_id != user.id) {
+          continue;
+        }
+
+        final authorPost = await _userRepo.getUserById(postResponse.user_id);
+        if (authorPost != null) {
+          final post = mapPostResponseToPostItem(
+            postResponse,
+            authorPost.userName,
+            authorPost.avatarUrl ?? '',
+            authorPost,
+          );
+
+          final likedPosts = await _getLikedPostIdsByUser(
+            _auth.currentUser?.uid ?? '',
+          );
+          post.isLiked = likedPosts.any(
+            (like) => like.postId == int.parse(post.id ?? '0'),
+          );
+
+          latestPosts.add(post);
+        }
+      }
+
+      if (latestPosts.isNotEmpty) {
+        await _isarPost.upsertPosts(latestPosts);
       }
     });
   }
