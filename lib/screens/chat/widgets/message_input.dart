@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 class MessageInput extends StatelessWidget {
   final TextEditingController textController;
@@ -18,9 +19,21 @@ class MessageInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -30,10 +43,10 @@ class MessageInput extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: colorScheme.onSurface.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: const Border(
-                    left: BorderSide(color: Colors.blueAccent, width: 4),
+                  border: Border(
+                    left: BorderSide(color: colorScheme.primary, width: 4),
                   ),
                 ),
                 child: Row(
@@ -43,11 +56,12 @@ class MessageInput extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Đang trả lời ${replyingTo!['authorMessage']}',
-                            style: const TextStyle(
-                              color: Colors.blueAccent,
+                            AppLocalizations.of(
+                              context,
+                            )!.replying_label(replyingTo!['authorMessage']!),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -55,16 +69,19 @@ class MessageInput extends StatelessWidget {
                             replyingTo!['content'] ?? '',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 14,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.7),
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 20),
+                      icon: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: theme.disabledColor,
+                      ),
                       onPressed: onCancelReply,
                     ),
                   ],
@@ -73,9 +90,9 @@ class MessageInput extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle,
-                    color: Colors.blueAccent,
+                    color: colorScheme.primary,
                     size: 28,
                   ),
                   onPressed: onAttachmentPressed,
@@ -84,13 +101,20 @@ class MessageInput extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: colorScheme.onSurface.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: TextField(
                       controller: textController,
-                      decoration: const InputDecoration(
-                        hintText: "Nhập tin nhắn...",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                      decoration: InputDecoration(
+                        hintText:
+                            AppLocalizations.of(context)!.type_message_hint,
+                        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.4),
+                        ),
                         border: InputBorder.none,
                       ),
                     ),
@@ -99,9 +123,13 @@ class MessageInput extends StatelessWidget {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: onSendMessage,
-                  child: const CircleAvatar(
-                    backgroundColor: Colors.blueAccent,
-                    child: Icon(Icons.send, color: Colors.white, size: 20),
+                  child: CircleAvatar(
+                    backgroundColor: colorScheme.primary,
+                    child: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],

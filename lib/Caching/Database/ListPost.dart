@@ -1,7 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:maintain_chat_app/Caching/Entity/PostEntity.dart';
 import 'package:maintain_chat_app/models/post_models.dart';
-import 'package:maintain_chat_app/utils/convert_time.dart';
 
 class IsarPost {
   final Isar isar;

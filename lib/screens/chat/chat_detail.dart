@@ -11,6 +11,7 @@ import 'package:maintain_chat_app/bloc/messages/messageBloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageEvent.dart';
 import 'package:maintain_chat_app/bloc/messages/messageState.dart';
 import 'package:maintain_chat_app/constants/storagePath.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
 import 'package:maintain_chat_app/services/fileService.dart';
 import 'package:maintain_chat_app/widgets/TopSnackBar.dart';
@@ -108,7 +109,7 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
       _replyingTo = {
         'authorMessage':
             message.senderID == _firebaseAuth.currentUser?.uid
-                ? 'Tôi'
+                ? AppLocalizations.of(context)!.me_label_chat
                 : widget.user.userName,
         'content': _getReplyMetadata(message),
       };
@@ -126,11 +127,11 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
       case MessageType.Text:
         return message.content;
       case MessageType.Image:
-        return '[Hình ảnh]';
+        return AppLocalizations.of(context)!.image_tag;
       case MessageType.Video:
-        return '[Video]';
+        return AppLocalizations.of(context)!.video_tag;
       case MessageType.Audio:
-        return '[Audio]';
+        return AppLocalizations.of(context)!.audio_tag;
     }
   }
 
@@ -158,7 +159,10 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
         messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
       }
     } catch (e) {
-      showSnackBar.show_error('Gửi ảnh thất bại: $e', context);
+      showSnackBar.show_error(
+        '${AppLocalizations.of(context)!.send_image_failed_chat}: $e',
+        context,
+      );
     } finally {
       setState(() {
         _isUploadingImage = false;
@@ -190,7 +194,10 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
         messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
       }
     } catch (e) {
-      showSnackBar.show_error('Gửi video thất bại: $e', context);
+      showSnackBar.show_error(
+        '${AppLocalizations.of(context)!.send_video_failed_chat}: $e',
+        context,
+      );
     } finally {
       setState(() {
         _isUploadingVideo = false;
@@ -199,6 +206,9 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
   }
 
   Widget _buildUploadingPlaceholder(String text, IconData icon) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -208,29 +218,29 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
             constraints: const BoxConstraints(maxWidth: 250),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blueAccent.withOpacity(0.2),
+              color: colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: Colors.blueAccent, size: 20),
+                Icon(icon, color: colorScheme.primary, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   text,
-                  style: const TextStyle(
-                    color: Colors.blueAccent,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 8),
-                const SizedBox(
+                SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.blueAccent,
+                      colorScheme.primary,
                     ),
                   ),
                 ),
@@ -243,14 +253,17 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
   }
 
   void showAttachmentOptions() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
@@ -264,33 +277,48 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: theme.disabledColor.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 20),
                 ListTile(
                   leading: const CircleAvatar(
-                    backgroundColor: Colors.purple,
+                    backgroundColor: Color(0xFF9C27B0),
                     child: Icon(Icons.image, color: Colors.white),
                   ),
-                  title: const Text('Chọn ảnh'),
+                  title: Text(
+                    AppLocalizations.of(context)!.select_image,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                   onTap: sendMessageImage,
                 ),
                 ListTile(
                   leading: const CircleAvatar(
-                    backgroundColor: Colors.red,
+                    backgroundColor: Color(0xFFE91E63),
                     child: Icon(Icons.videocam, color: Colors.white),
                   ),
-                  title: const Text('Chọn video'),
+                  title: Text(
+                    AppLocalizations.of(context)!.select_video,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                   onTap: sendMessageVideo,
                 ),
                 ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.mic, color: Colors.white),
+                  leading: CircleAvatar(
+                    backgroundColor: colorScheme.primary,
+                    child: const Icon(Icons.mic, color: Colors.white),
                   ),
-                  title: const Text('Ghi âm'),
+                  title: Text(
+                    AppLocalizations.of(context)!.record_audio,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                   onTap: _startAudioRecording,
                 ),
                 const SizedBox(height: 20),
@@ -358,7 +386,10 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
         debugPrint('Error deleting local file: $e');
       }
     } catch (e) {
-      showSnackBar.show_error('Gửi audio thất bại: $e', context);
+      showSnackBar.show_error(
+        '${AppLocalizations.of(context)!.send_audio_failed_chat}: $e',
+        context,
+      );
     } finally {
       setState(() {
         _isUploadingAudio = false;
@@ -368,8 +399,11 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
@@ -379,17 +413,19 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
           },
           icon: const Icon(Icons.arrow_back),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surface,
         title: Row(
           children: [
             CircleAvatar(
+              backgroundColor: colorScheme.onSurface.withOpacity(0.1),
               backgroundImage:
                   widget.user.avatarUrl?.isNotEmpty ?? false
                       ? CachedNetworkImageProvider(widget.user.avatarUrl!)
                       : null,
               child:
                   widget.user.avatarUrl?.isEmpty ?? true
-                      ? const Icon(Icons.person, color: Colors.white)
+                      ? Icon(Icons.person, color: theme.disabledColor)
                       : null,
             ),
             const SizedBox(width: 10),
@@ -398,15 +434,20 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
               children: [
                 Text(
                   widget.user.userName,
-                  style: const TextStyle(color: Colors.black, fontSize: 16),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
-                  widget.user.isOnline ?? false ? "Đang hoạt động" : "Offline",
-                  style: TextStyle(
+                  widget.user.isOnline ?? false
+                      ? AppLocalizations.of(context)!.active_now_label
+                      : AppLocalizations.of(context)!.offline_label,
+                  style: theme.textTheme.bodySmall?.copyWith(
                     color:
                         widget.user.isOnline ?? false
                             ? Colors.green
-                            : Colors.grey,
+                            : theme.disabledColor,
                     fontSize: 12,
                   ),
                 ),
@@ -414,10 +455,10 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
             ),
           ],
         ),
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
+            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
             onSelected: (value) {
               if (value == 'view_profile') {
                 Navigator.push(
@@ -434,13 +475,13 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
             },
             itemBuilder:
                 (BuildContext context) => [
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'view_profile',
                     child: Row(
                       children: [
-                        Icon(Icons.person, color: Colors.black87),
-                        SizedBox(width: 12),
-                        Text('Xem trang cá nhân'),
+                        Icon(Icons.person, color: colorScheme.onSurface),
+                        const SizedBox(width: 12),
+                        Text(AppLocalizations.of(context)!.view_profile_menu),
                       ],
                     ),
                   ),
@@ -451,9 +492,15 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
       body: BlocListener<MessageBloc, MessageState>(
         listener: (context, state) {
           if (state.sendState == false) {
-            showSnackBar.show_error('Gửi tin nhắn thất bại', context);
+            showSnackBar.show_error(
+              AppLocalizations.of(context)!.send_message_failed,
+              context,
+            );
           } else if (state.deleteState == false) {
-            showSnackBar.show_error('Xoá tin nhắn thất bại', context);
+            showSnackBar.show_error(
+              AppLocalizations.of(context)!.delete_message_failed,
+              context,
+            );
           }
         },
         child: BlocBuilder<MessageBloc, MessageState>(
@@ -465,14 +512,16 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
           builder: (context, state) {
             log(state.toString());
             if (state.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.blueAccent),
+              return Center(
+                child: CircularProgressIndicator(color: colorScheme.primary),
               );
             } else if (state.error != null) {
               return Center(
                 child: Text(
-                  'Lỗi tải tin nhắn: ${state.error}',
-                  style: const TextStyle(color: Colors.red),
+                  AppLocalizations.of(
+                    context,
+                  )!.load_messages_error(state.error.toString()),
+                  style: TextStyle(color: colorScheme.error),
                 ),
               );
             } else {
@@ -487,10 +536,11 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
                             child: Text(
-                              'Bắt đầu cuộc trò chuyện với ${widget.user.userName}!',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
+                              AppLocalizations.of(
+                                context,
+                              )!.start_chat_hint(widget.user.userName),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ),
@@ -511,7 +561,9 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                             // Hiển thị placeholder cho uploading audio
                             if (_isUploadingAudio && index == 0) {
                               return _buildUploadingPlaceholder(
-                                'Đang gửi audio...',
+                                AppLocalizations.of(
+                                  context,
+                                )!.sending_audio_status,
                                 Icons.audiotrack,
                               );
                             }
@@ -519,7 +571,9 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                             if (_isUploadingVideo &&
                                 index == (_isUploadingAudio ? 1 : 0)) {
                               return _buildUploadingPlaceholder(
-                                'Đang gửi video...',
+                                AppLocalizations.of(
+                                  context,
+                                )!.sending_video_status,
                                 Icons.videocam,
                               );
                             }
@@ -529,15 +583,14 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                                     (_isUploadingAudio ? 1 : 0) +
                                         (_isUploadingVideo ? 1 : 0)) {
                               return _buildUploadingPlaceholder(
-                                'Đang gửi ảnh...',
+                                AppLocalizations.of(
+                                  context,
+                                )!.sending_image_status,
                                 Icons.image,
                               );
                             }
 
                             // Tính toán index cho messages
-                            // Vì list đã được sắp xếp mới nhất ở đầu (index 0)
-                            // Và ListView reverse: true nên index 0 của ListView là ở BOTTOM
-                            // Chúng ta trừ đi số lượng uploading placeholders
                             final messageIndex =
                                 index -
                                 (_isUploadingImage ? 1 : 0) -

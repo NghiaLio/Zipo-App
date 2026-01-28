@@ -58,6 +58,9 @@ class _VideoMessageWidgetState extends State<VideoMessageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap:
           widget.onTap ??
@@ -73,17 +76,17 @@ class _VideoMessageWidgetState extends State<VideoMessageWidget> {
             });
           },
       child: Container(
-        color: Colors.black,
+        color: Colors.black, // Videos look better with black background
         width: 250,
         height: 250 * (9 / 16),
         child:
             _hasError
                 ? Container(
-                  color: Colors.grey[800],
-                  child: const Center(
+                  color: colorScheme.onSurface.withOpacity(0.05),
+                  child: Center(
                     child: Icon(
                       Icons.error_outline,
-                      color: Colors.white54,
+                      color: colorScheme.error,
                       size: 50,
                     ),
                   ),
@@ -98,21 +101,21 @@ class _VideoMessageWidgetState extends State<VideoMessageWidget> {
                     ),
                     if (!_isPlaying)
                       Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.black38,
+                        decoration: BoxDecoration(
+                          color: colorScheme.scrim.withOpacity(0.4),
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(12),
                         child: const Icon(
-                          Icons.play_arrow,
+                          Icons.play_arrow_rounded,
                           color: Colors.white,
                           size: 40,
                         ),
                       ),
                   ],
                 )
-                : const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                : Center(
+                  child: CircularProgressIndicator(color: colorScheme.primary),
                 ),
       ),
     );

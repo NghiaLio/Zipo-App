@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'messenger_page.dart';
 import '../Social/posts_page.dart';
 import '../profiles/profile_page.dart';
@@ -80,6 +81,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
@@ -89,25 +92,26 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             _currentIndex = index;
           });
         },
-        selectedItemColor: const Color(0xFF0288D1),
-        unselectedItemColor: Colors.grey[600],
+        backgroundColor: colorScheme.surface,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined),
-            activeIcon: Icon(Icons.message),
-            label: 'Tin nhắn',
+            icon: const Icon(Icons.message_outlined),
+            activeIcon: const Icon(Icons.message),
+            label: AppLocalizations.of(context)!.messages_tab,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            activeIcon: Icon(Icons.article),
-            label: 'Bài viết',
+            icon: const Icon(Icons.article_outlined),
+            activeIcon: const Icon(Icons.article),
+            label: AppLocalizations.of(context)!.posts_tab,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Cá nhân',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: AppLocalizations.of(context)!.profile_tab,
           ),
         ],
       ),

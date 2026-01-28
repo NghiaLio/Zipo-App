@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/screens/profiles/friends_tab.dart';
 import 'package:maintain_chat_app/screens/profiles/friend_requests_tab.dart';
 import '../../utils/responsive_helper.dart';
@@ -36,19 +37,22 @@ class _FriendPageState extends State<FriendPage>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Bạn bè',
-          style: TextStyle(
-            color: Colors.black,
+          AppLocalizations.of(context)!.friends_title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: colorScheme.onSurface,
             fontSize: ResponsiveHelper.getFontSize(context, 24),
             fontWeight: FontWeight.bold,
           ),
@@ -64,20 +68,30 @@ class _FriendPageState extends State<FriendPage>
                 ),
                 child: TextField(
                   controller: _searchController,
+                  style: theme.textTheme.bodyLarge,
                   decoration: InputDecoration(
-                    hintText: 'Tìm kiếm...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintText: AppLocalizations.of(context)!.search_hint,
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                     suffixIcon:
                         _searchQuery.isNotEmpty
                             ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: Icon(
+                                Icons.clear,
+                                color: colorScheme.onSurface.withOpacity(0.6),
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                               },
                             )
                             : null,
                     filled: true,
-                    fillColor: Colors.grey[200],
+                    fillColor: colorScheme.onSurface.withOpacity(0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -91,14 +105,20 @@ class _FriendPageState extends State<FriendPage>
               ),
               TabBar(
                 controller: _tabController,
-                indicatorColor: Colors.blue,
-                labelColor: Colors.blue,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: TextStyle(
+                indicatorColor: colorScheme.primary,
+                labelColor: colorScheme.primary,
+                unselectedLabelColor: colorScheme.onSurface.withOpacity(0.4),
+                labelStyle: theme.textTheme.titleMedium?.copyWith(
                   fontSize: ResponsiveHelper.getFontSize(context, 16),
                   fontWeight: FontWeight.bold,
                 ),
-                tabs: const [Tab(text: 'Bạn bè'), Tab(text: 'Lời mời kết bạn')],
+                unselectedLabelStyle: theme.textTheme.bodyLarge?.copyWith(
+                  fontSize: ResponsiveHelper.getFontSize(context, 16),
+                ),
+                tabs: [
+                  Tab(text: AppLocalizations.of(context)!.friends_title),
+                  Tab(text: AppLocalizations.of(context)!.friend_requests_tab),
+                ],
               ),
             ],
           ),

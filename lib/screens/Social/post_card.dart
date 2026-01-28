@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:maintain_chat_app/screens/Social/comment_bottom_sheet.dart';
 import '../../models/post_models.dart';
@@ -22,9 +23,21 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,13 +47,18 @@ class PostCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
+                  backgroundColor: colorScheme.onSurface.withOpacity(0.1),
                   backgroundImage:
                       post.authorAvatar.isNotEmpty
                           ? CachedNetworkImageProvider(post.authorAvatar)
                           : null,
                   child:
                       post.authorAvatar.isEmpty
-                          ? const Icon(Icons.person, size: 20)
+                          ? Icon(
+                            Icons.person,
+                            size: 20,
+                            color: theme.disabledColor,
+                          )
                           : null,
                 ),
                 const SizedBox(width: 12),
@@ -50,21 +68,23 @@ class PostCard extends StatelessWidget {
                     children: [
                       Text(
                         post.authorName,
-                        style: const TextStyle(
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       Text(
                         post.timeAgo,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.disabledColor,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 if (currentUserId != null && post.authorId == currentUserId)
                   IconButton(
-                    icon: const Icon(Icons.more_horiz),
+                    icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
                     onPressed: () => _showOptionsBottomSheet(context),
                   ),
               ],
@@ -72,7 +92,12 @@ class PostCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(post.content, style: const TextStyle(fontSize: 14)),
+            child: Text(
+              post.content,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           if (post.imageUrl.isNotEmpty)
@@ -120,21 +145,23 @@ class PostCard extends StatelessWidget {
                         (context, url) => Container(
                           width: double.infinity,
                           height: 300,
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
+                          color: colorScheme.onSurface.withOpacity(0.05),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: colorScheme.primary,
+                            ),
                           ),
                         ),
                     errorWidget:
                         (context, url, error) => Container(
                           width: double.infinity,
                           height: 300,
-                          color: Colors.grey[300],
-                          child: const Center(
+                          color: colorScheme.onSurface.withOpacity(0.05),
+                          child: Center(
                             child: Icon(
                               Icons.broken_image,
                               size: 50,
-                              color: Colors.grey,
+                              color: theme.disabledColor,
                             ),
                           ),
                         ),
@@ -145,6 +172,7 @@ class PostCard extends StatelessWidget {
             child: Row(
               children: [
                 _buildActionButton(
+                  context,
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     transitionBuilder:
@@ -154,7 +182,10 @@ class PostCard extends StatelessWidget {
                       post.isLiked ? Icons.favorite : Icons.favorite_border,
                       key: ValueKey(post.isLiked),
                       size: 22,
-                      color: post.isLiked ? Colors.red : null,
+                      color:
+                          post.isLiked
+                              ? Colors.red
+                              : colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
                   post.likes.toString(),
@@ -166,7 +197,12 @@ class PostCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
                 _buildActionButton(
-                  Icon(Icons.comment_outlined),
+                  context,
+                  Icon(
+                    Icons.comment_outlined,
+                    size: 22,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   post.comments.toString(),
                   () {
                     showModalBottomSheet(
@@ -183,7 +219,11 @@ class PostCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.share_outlined),
+                  icon: Icon(
+                    Icons.share_outlined,
+                    size: 22,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
                   onPressed: () {},
                 ),
               ],
@@ -194,28 +234,49 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(Widget icon, String count, VoidCallback onTap) {
+  Widget _buildActionButton(
+    BuildContext context,
+    Widget icon,
+    String count,
+    VoidCallback onTap,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: onTap,
-      child: Row(
-        children: [
-          icon,
-          const SizedBox(width: 4),
-          Text(count, style: const TextStyle(fontSize: 14)),
-        ],
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          children: [
+            icon,
+            const SizedBox(width: 6),
+            Text(
+              count,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _showOptionsBottomSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -229,7 +290,7 @@ class PostCard extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: theme.disabledColor.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -254,13 +315,15 @@ class PostCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.edit, color: Colors.black),
+                          Icon(
+                            Icons.edit_outlined,
+                            color: colorScheme.onSurface,
+                          ),
                           const SizedBox(width: 16),
                           Text(
-                            'Chỉnh sửa bài viết',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
+                            AppLocalizations.of(context)!.edit_post_title,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.onSurface,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -268,7 +331,10 @@ class PostCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(
+                    height: 1,
+                    color: theme.dividerColor.withOpacity(0.5),
+                  ),
                   // Nút xóa bài viết
                   InkWell(
                     onTap: () {
@@ -283,13 +349,12 @@ class PostCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, color: Colors.red[700]),
+                          Icon(Icons.delete_outline, color: colorScheme.error),
                           const SizedBox(width: 16),
                           Text(
-                            'Xóa bài viết',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.red[700],
+                            AppLocalizations.of(context)!.delete_post_action,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.error,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -297,7 +362,10 @@ class PostCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(
+                    height: 1,
+                    color: theme.dividerColor.withOpacity(0.5),
+                  ),
                   // Nút Cancel
                   InkWell(
                     onTap: () => Navigator.pop(context),
@@ -309,13 +377,12 @@ class PostCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.close, color: Colors.grey[700]),
+                          Icon(Icons.close, color: theme.disabledColor),
                           const SizedBox(width: 16),
                           Text(
-                            'Hủy',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[700],
+                            AppLocalizations.of(context)!.cancel_action,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.disabledColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -332,28 +399,53 @@ class PostCard extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Xác nhận xóa'),
-            content: const Text(
-              'Bạn có chắc chắn muốn xóa bài viết này không?',
+            backgroundColor: colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.confirm_delete_title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              AppLocalizations.of(context)!.confirm_delete_post_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Hủy'),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel_action,
+                  style: TextStyle(color: theme.disabledColor),
+                ),
               ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                   if (onDelete != null) {
                     onDelete!();
                   }
                 },
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Xóa'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(AppLocalizations.of(context)!.delete_action),
               ),
             ],
           ),

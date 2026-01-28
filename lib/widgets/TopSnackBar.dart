@@ -6,6 +6,7 @@ import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class showSnackBar {
   static show_error(String mess, dynamic context) {
+    final theme = Theme.of(context);
     showTopSnackBar(
       Overlay.of(context),
       SizedBox(
@@ -13,12 +14,18 @@ class showSnackBar {
         child: CustomSnackBar.success(
           message: mess,
           borderRadius: const BorderRadius.all(Radius.elliptical(50, 50)),
-          backgroundColor: const Color.fromARGB(255, 235, 111, 111),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color.fromARGB(255, 168, 34, 34),
-          ),
+          backgroundColor: theme.colorScheme.error,
+          textStyle:
+              theme.textTheme.titleMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onError,
+              ) ??
+              const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
           messagePadding: const EdgeInsets.symmetric(
             vertical: 0,
             horizontal: 0,
@@ -33,6 +40,7 @@ class showSnackBar {
   }
 
   static show_success(String mess, dynamic context) {
+    final theme = Theme.of(context);
     showTopSnackBar(
       Overlay.of(context),
       SizedBox(
@@ -40,12 +48,20 @@ class showSnackBar {
         child: CustomSnackBar.success(
           message: mess,
           borderRadius: const BorderRadius.all(Radius.elliptical(50, 50)),
-          backgroundColor: const Color.fromARGB(255, 98, 243, 142),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color.fromARGB(255, 4, 125, 26),
-          ),
+          backgroundColor:
+              Colors
+                  .green, // You might want to use a theme success color if available
+          textStyle:
+              theme.textTheme.titleMedium?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ) ??
+              const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
           messagePadding: const EdgeInsets.symmetric(
             vertical: 0,
             horizontal: 0,

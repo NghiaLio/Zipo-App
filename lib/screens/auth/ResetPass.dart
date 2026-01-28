@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
+import 'package:maintain_chat_app/bloc/auth/authStates.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 import '../../bloc/auth/authBloc.dart';
 import '../../widgets/TopSnackBar.dart';
@@ -17,22 +19,15 @@ class ResetPass extends StatefulWidget {
 class _ResetPassState extends State<ResetPass> {
   bool isFieldEmpty = false;
   final emailController = TextEditingController();
-  void sendEmail() async {
+  void sendEmail() {
     final String email = emailController.text.trim();
     if (email.isEmpty) {
-      showSnackBar.show_error('Nhập email của bạn', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.enter_your_email,
+        context,
+      );
     } else {
-      try {
-        context.read<AuthBloc>().add(ResetPasswordEvent(email));
-        showDialog(
-          context: context,
-          builder: (context) {
-            return dialogSuccess();
-          },
-        );
-      } on Exception catch (e) {
-        showSnackBar.show_error('Email không chính xác $e', context,);
-      }
+      context.read<AuthBloc>().add(ResetPasswordEvent(email));
     }
   }
 
@@ -65,15 +60,70 @@ class _ResetPassState extends State<ResetPass> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        body: Column(
-          children: [
-            Expanded(flex: 3, child: _buildHeader(size)),
-            const Spacer(),
-            Expanded(flex: 5, child: _buildFormCard(size)),
-          ],
+        body: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state.message != null && state.message!.isNotEmpty) {
+              if (state.message == emailController.text.trim()) {
+                showDialog(
+                  context: context,
+                  builder: (context) => dialogSuccess(),
+                );
+              } else {
+                showSnackBar.show_error(
+                  _getTranslatedMessage(context, state.message!),
+                  context,
+                );
+              }
+            }
+          },
+          child: Column(
+            children: [
+              Expanded(flex: 3, child: _buildHeader(size)),
+              const Spacer(),
+              Expanded(flex: 5, child: _buildFormCard(size)),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  String _getTranslatedMessage(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (message) {
+      case 'auth_error_user_not_found':
+        return l10n.auth_error_user_not_found;
+      case 'auth_error_wrong_password':
+        return l10n.auth_error_wrong_password;
+      case 'auth_error_invalid_email':
+        return l10n.auth_error_invalid_email;
+      case 'auth_error_user_disabled':
+        return l10n.auth_error_user_disabled;
+      case 'auth_error_too_many_requests':
+        return l10n.auth_error_too_many_requests;
+      case 'auth_error_network_failed':
+        return l10n.auth_error_network_failed;
+      case 'auth_error_invalid_credential':
+        return l10n.auth_error_invalid_credential;
+      case 'auth_error_email_already_in_use':
+        return l10n.auth_error_email_already_in_use;
+      case 'auth_error_weak_password':
+        return l10n.auth_error_weak_password;
+      case 'auth_error_operation_not_allowed':
+        return l10n.auth_error_operation_not_allowed;
+      case 'auth_login_failed':
+        return l10n.auth_login_failed;
+      case 'auth_register_failed':
+        return l10n.auth_register_failed;
+      case 'auth_check_failed':
+        return l10n.auth_check_failed;
+      case 'auth_reset_failed':
+        return l10n.auth_reset_failed;
+      case 'auth_error_default':
+        return l10n.auth_error_default;
+      default:
+        return message;
+    }
   }
 
   Widget _buildHeader(Size size) {
@@ -109,18 +159,18 @@ class _ResetPassState extends State<ResetPass> {
                   children: [
                     const Icon(Icons.lock_reset, size: 60, color: Colors.white),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Reset Password',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.reset_password_title,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
-                      'Enter your email to reset',
+                      AppLocalizations.of(context)!.enter_email_to_reset,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 16,
@@ -143,9 +193,9 @@ class _ResetPassState extends State<ResetPass> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Email Address',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.email_address,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Color(0xFF424242),
@@ -155,7 +205,7 @@ class _ResetPassState extends State<ResetPass> {
           _buildEmailField(),
           const SizedBox(height: 24),
           Text(
-            'We will send you a link to reset your password to your email address.',
+            AppLocalizations.of(context)!.reset_instructions,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade600,
@@ -178,7 +228,7 @@ class _ResetPassState extends State<ResetPass> {
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF0288D1)),
-        hintText: 'Enter your email',
+        hintText: AppLocalizations.of(context)!.email_hint,
         hintStyle: TextStyle(color: Colors.grey.shade400),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -228,7 +278,7 @@ class _ResetPassState extends State<ResetPass> {
                   : null,
         ),
         child: Text(
-          'Send Reset Link',
+          AppLocalizations.of(context)!.send_reset_link,
           style: TextStyle(
             color: isFieldEmpty ? Colors.white : Colors.grey.shade600,
             fontSize: 16,
@@ -243,9 +293,9 @@ class _ResetPassState extends State<ResetPass> {
   Widget _buildBackToLoginButton() {
     return TextButton(
       onPressed: () => Navigator.pop(context),
-      child: const Text(
-        'Back to Login',
-        style: TextStyle(
+      child: Text(
+        AppLocalizations.of(context)!.back_to_login,
+        style: const TextStyle(
           color: Color(0xFF0288D1),
           fontSize: 15,
           fontWeight: FontWeight.w600,
@@ -287,9 +337,9 @@ class _ResetPassState extends State<ResetPass> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Email Sent!',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.email_sent,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF424242),
@@ -297,7 +347,7 @@ class _ResetPassState extends State<ResetPass> {
             ),
             const SizedBox(height: 12),
             Text(
-              'A password reset link has been sent to your email address. Please check your inbox.',
+              AppLocalizations.of(context)!.email_sent_details,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade700,
@@ -322,9 +372,12 @@ class _ResetPassState extends State<ResetPass> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Got it',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: Text(
+                  AppLocalizations.of(context)!.got_it,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
+import 'package:maintain_chat_app/themes/app_colors.dart';
 
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
@@ -19,22 +21,21 @@ class _SecurityScreenState extends State<SecurityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Bảo mật',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Text(
+          AppLocalizations.of(context)!.security_menu,
+          style: theme.textTheme.titleLarge,
         ),
       ),
       body: SingleChildScrollView(
@@ -46,7 +47,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -57,34 +58,32 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0288D1).withOpacity(0.1),
+                          color: colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.security,
-                          color: Color(0xFF0288D1),
+                          color: colorScheme.primary,
                           size: 32,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Đặt lại mật khẩu',
-                              style: TextStyle(
-                                fontSize: 18,
+                              AppLocalizations.of(context)!.reset_password_menu,
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Bảo vệ tài khoản của bạn',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
+                              AppLocalizations.of(
+                                context,
+                              )!.protect_account_subtitle,
+                              style: theme.textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -92,13 +91,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Để đảm bảo an toàn cho tài khoản của bạn, chúng tôi khuyến nghị thay đổi mật khẩu định kỳ. Mật khẩu mạnh nên có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Colors.black87,
-                    ),
+                  Text(
+                    AppLocalizations.of(context)!.security_description,
+                    style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
                   if (_showEmailInput) ...[
@@ -106,20 +101,32 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'Nhập email của bạn',
-                        prefixIcon: const Icon(Icons.email_outlined),
+                        labelText: AppLocalizations.of(context)!.email_label,
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                        hintText:
+                            AppLocalizations.of(context)!.enter_email_hint,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.4),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: colorScheme.primary,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
+                          borderSide: BorderSide(
+                            color: colorScheme.outline.withOpacity(0.3),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF0288D1),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
                             width: 2,
                           ),
                         ),
@@ -144,15 +151,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
                         size: 20,
                       ),
                       label: Text(
-                        _showEmailInput ? 'Gửi' : 'Đặt lại mật khẩu',
+                        _showEmailInput
+                            ? AppLocalizations.of(context)!.send_button
+                            : AppLocalizations.of(context)!.reset_password_menu,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0288D1),
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -171,9 +180,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                             _emailController.clear();
                           });
                         },
-                        child: const Text(
-                          'Hủy',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        child: Text(
+                          AppLocalizations.of(context)!.cancel_action,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
                         ),
                       ),
                     ),
@@ -186,35 +197,37 @@ class _SecurityScreenState extends State<SecurityScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Mẹo bảo mật',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.security_tips_title,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _buildSecurityTip(
                     Icons.password,
-                    'Sử dụng mật khẩu mạnh và độc nhất',
+                    AppLocalizations.of(context)!.strong_password_tip,
                   ),
                   const SizedBox(height: 8),
                   _buildSecurityTip(
                     Icons.update,
-                    'Thay đổi mật khẩu định kỳ (3-6 tháng/lần)',
+                    AppLocalizations.of(context)!.periodic_change_tip,
                   ),
                   const SizedBox(height: 8),
                   _buildSecurityTip(
                     Icons.no_accounts,
-                    'Không chia sẻ mật khẩu với người khác',
+                    AppLocalizations.of(context)!.no_share_password_tip,
                   ),
                   const SizedBox(height: 8),
                   _buildSecurityTip(
                     Icons.verified_user,
-                    'Bật xác thực 2 bước để tăng cường bảo mật',
+                    AppLocalizations.of(context)!.two_factor_auth_tip,
                   ),
                 ],
               ),
@@ -226,17 +239,19 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   Widget _buildSecurityTip(IconData icon, String text) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: Colors.grey[600]),
+        Icon(icon, size: 18, color: colorScheme.onSurface.withOpacity(0.6)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[700],
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
               height: 1.4,
             ),
           ),
@@ -246,17 +261,23 @@ class _SecurityScreenState extends State<SecurityScreen> {
   }
 
   void _sendResetEmail() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Vui lòng nhập email'),
+              Icon(Icons.error_outline, color: colorScheme.onError),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.enter_your_email,
+                style: TextStyle(color: colorScheme.onError),
+              ),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: colorScheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -271,14 +292,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
     if (!emailRegex.hasMatch(_emailController.text.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Email không hợp lệ'),
+              Icon(Icons.error_outline, color: colorScheme.onError),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.invalid_email_error,
+                style: TextStyle(color: colorScheme.onError),
+              ),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: colorScheme.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -291,18 +315,21 @@ class _SecurityScreenState extends State<SecurityScreen> {
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 12),
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Đã gửi email đặt lại mật khẩu. Vui lòng kiểm tra hộp thư của bạn.',
+                AppLocalizations.of(context)!.reset_email_sent_success,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 4),

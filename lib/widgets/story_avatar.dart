@@ -54,35 +54,34 @@ class _StoryAvatarState extends State<StoryAvatar>
         .checkExistingChat(chatId);
     if (!isExistingChat) {
       // Create new chat
-       context.read<ChatBloc>().add(
+      context.read<ChatBloc>().add(
         CreateChatEvent([widget.user.id, _firebaseAuth.currentUser?.uid ?? '']),
       );
-      
     }
     // Navigate to existing chat screen
-      Navigator.pushNamed(
-        context,
-        '/chatDetail',
-        arguments: {
-          'user': widget.user,
-          'chatId': chatId,
-        },
-      );
-    
+    Navigator.pushNamed(
+      context,
+      '/chatDetail',
+      arguments: {'user': widget.user, 'chatId': chatId},
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final avatarSize = ResponsiveHelper.getAvatarSize(context);
     final horizontalPadding = ResponsiveHelper.getResponsiveSize(
       context,
       8,
     ).clamp(6.0, 12.0);
     final fontSize = ResponsiveHelper.getFontSize(context, 12);
-    final addIconSize = ResponsiveHelper.getResponsiveSize(
+    final onlineIndicatorSize = ResponsiveHelper.getResponsiveSize(
       context,
-      20,
-    ).clamp(16.0, 24.0);
+      14,
+    ).clamp(12.0, 16.0);
+
+    final isOnline = widget.user.isOnline ?? false;
 
     return GestureDetector(
       onTapDown: (_) => _controller.forward(),
@@ -94,8 +93,9 @@ class _StoryAvatarState extends State<StoryAvatar>
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: SizedBox(
-            width: avatarSize + 12,
+            width: avatarSize + 4,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Stack(
                   children: [
@@ -106,69 +106,55 @@ class _StoryAvatarState extends State<StoryAvatar>
                         shape: BoxShape.circle,
                         border: Border.all(
                           color:
-                              widget.user.isOnline ?? false
-                                  ? Colors.green
-                                  : Colors.grey[300]!,
+                              isOnline
+                                  ? colorScheme.primary
+                                  : theme.disabledColor.withOpacity(0.3),
                           width: 2,
                         ),
                       ),
-                      child:
-                          widget.user.avatarUrl?.isNotEmpty ?? false
-                              ? Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 3,
-                                  ),
-                                  image:
-                                      widget.user.avatarUrl?.isNotEmpty ?? false
-                                          ? DecorationImage(
-                                            image: NetworkImage(
-                                              widget.user.avatarUrl!,
-                                            ),
-                                            fit: BoxFit.cover,
-                                          )
-                                          : null,
-                                ),
-                              )
-                              : CircleAvatar(
-                                radius: avatarSize / 2,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(
-                                  Icons.person,
-                                  size: avatarSize * 0.6,
-                                  color: Colors.white,
-                                ),
-                              ),
+                      padding: const EdgeInsets.all(2),
+                      child: ClipOval(
+                        child:
+                            widget.user.avatarUrl?.isNotEmpty ?? false
+                                ? Image.network(
+                                  widget.user.avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, error, stackTrace) =>
+                                          _buildPlaceholder(theme),
+                                )
+                                : _buildPlaceholder(theme),
+                      ),
                     ),
-                    if (widget.user.isOnline ?? false)
+                    if (isOnline)
                       Positioned(
-                        bottom: 0,
-                        right: 0,
+                        bottom: 2,
+                        right: 2,
                         child: Container(
-                          width: addIconSize,
-                          height: addIconSize,
+                          width: onlineIndicatorSize,
+                          height: onlineIndicatorSize,
                           decoration: BoxDecoration(
-                            color: Colors.green,
+                            color: const Color(0xFF4CAF50),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                          child: Icon(
-                            Icons.circle,
-                            size: addIconSize * 0.4,
-                            color: Colors.green,
+                            border: Border.all(
+                              color: colorScheme.surface,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
                   ],
                 ),
-                SizedBox(
-                  height: ResponsiveHelper.getResponsiveSize(context, 4),
-                ),
+                const SizedBox(height: 6),
                 Text(
                   widget.user.userName,
-                  style: TextStyle(fontSize: fontSize),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: fontSize,
+                    fontWeight: isOnline ? FontWeight.w600 : FontWeight.normal,
+                    color: colorScheme.onSurface.withOpacity(
+                      isOnline ? 1.0 : 0.7,
+                    ),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
@@ -177,6 +163,17 @@ class _StoryAvatarState extends State<StoryAvatar>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(ThemeData theme) {
+    return Container(
+      color: theme.disabledColor.withOpacity(0.1),
+      child: Icon(
+        Icons.person,
+        size: ResponsiveHelper.getAvatarSize(context) * 0.5,
+        color: theme.disabledColor,
       ),
     );
   }

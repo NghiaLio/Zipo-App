@@ -9,6 +9,9 @@ class ImageMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: LayoutBuilder(
@@ -19,10 +22,20 @@ class ImageMessageWidget extends StatelessWidget {
                 (context, url) => Container(
                   height: 220,
                   width: 180,
-                  color: Colors.grey[300],
-                  child: const Center(child: CircularProgressIndicator()),
+                  color: colorScheme.onSurface.withOpacity(0.05),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
+            errorWidget:
+                (context, url, error) => Container(
+                  height: 220,
+                  width: 180,
+                  color: colorScheme.onSurface.withOpacity(0.05),
+                  child: Icon(Icons.error_outline, color: colorScheme.error),
+                ),
             fit: BoxFit.cover,
             width: 180,
             height: 220,

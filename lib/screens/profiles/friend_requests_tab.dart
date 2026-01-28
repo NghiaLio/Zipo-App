@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userState.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/screens/profiles/profile_detail_page.dart';
 import '../../utils/responsive_helper.dart';
@@ -31,12 +32,24 @@ class _FriendRequestsTabState extends State<FriendRequestsTab> {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+
         if (state.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(color: colorScheme.primary),
+          );
         }
 
         if (state.listFriendRequests.isEmpty) {
-          return const Center(child: Text('Chưa có lời mời kết bạn nào'));
+          return Center(
+            child: Text(
+              AppLocalizations.of(context)!.no_friend_requests_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          );
         }
 
         // Filter friend requests based on search query
@@ -48,7 +61,14 @@ class _FriendRequestsTabState extends State<FriendRequestsTab> {
             }).toList();
 
         if (filteredRequests.isEmpty) {
-          return const Center(child: Text('Không tìm thấy kết quả'));
+          return Center(
+            child: Text(
+              AppLocalizations.of(context)!.no_results_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          );
         }
 
         return ListView.builder(
@@ -94,13 +114,49 @@ class FriendRequestItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            GestureDetector(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.onSurface.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          ProfileDetailPage(user: request, isViewOnly: true),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              radius: 28,
+              backgroundColor: colorScheme.onSurface.withOpacity(0.1),
+              backgroundImage: CachedNetworkImageProvider(
+                request.avatarUrl?.isNotEmpty == true
+                    ? request.avatarUrl!
+                    : 'https://i.pravatar.cc/150?img=${request.id.hashCode % 70}',
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
@@ -111,96 +167,82 @@ class FriendRequestItem extends StatelessWidget {
                   ),
                 );
               },
-              child: CircleAvatar(
-                radius: 28,
-                backgroundImage: CachedNetworkImageProvider(
-                  request.avatarUrl?.isNotEmpty == true
-                      ? request.avatarUrl!
-                      : 'https://i.pravatar.cc/150?img=${request.id.hashCode % 70}',
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    request.userName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: ResponsiveHelper.getFontSize(context, 16),
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    request.email,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: ResponsiveHelper.getFontSize(context, 14),
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => ProfileDetailPage(
-                            user: request,
-                            isViewOnly: true,
-                          ),
-                    ),
-                  );
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      request.userName,
-                      style: TextStyle(
-                        fontSize: ResponsiveHelper.getFontSize(context, 16),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      request.email,
-                      style: TextStyle(
-                        fontSize: ResponsiveHelper.getFontSize(context, 14),
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+          ),
+          const SizedBox(width: 8),
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: () => _handleAccept(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  minimumSize: const Size(90, 36),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.accept_action,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onPrimary,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () => _handleAccept(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    minimumSize: const Size(90, 36),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => _handleReject(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.onSurface.withOpacity(0.7),
+                  side: BorderSide(
+                    color: colorScheme.onSurface.withOpacity(0.2),
                   ),
-                  child: Text(
-                    'Xác nhận',
-                    style: TextStyle(
-                      fontSize: ResponsiveHelper.getFontSize(context, 14),
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  minimumSize: const Size(90, 36),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: () => _handleReject(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey[700],
-                    side: BorderSide(color: Colors.grey[400]!),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    minimumSize: const Size(90, 36),
-                  ),
-                  child: Text(
-                    'Từ chối',
-                    style: TextStyle(
-                      fontSize: ResponsiveHelper.getFontSize(context, 14),
-                    ),
+                child: Text(
+                  AppLocalizations.of(context)!.reject_action,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

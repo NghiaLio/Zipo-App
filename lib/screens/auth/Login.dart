@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
 import 'package:maintain_chat_app/bloc/auth/authStates.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/screens/auth/ResetPass.dart';
 import 'package:maintain_chat_app/screens/auth/register.dart';
 
@@ -30,7 +31,7 @@ class _LoginState extends State<Login> {
     String email = emailController.text.trim();
     String pass = passController.text.trim();
     if (email.isEmpty || pass.isEmpty) {
-      showSnackBar.show_error('Nhập thông tin', context);
+      showSnackBar.show_error(AppLocalizations.of(context)!.fill_info, context);
     } else {
       setState(() {
         isLoading = true;
@@ -92,7 +93,10 @@ class _LoginState extends State<Login> {
         if (state.message != null &&
             state.message!.isNotEmpty &&
             !state.isAuthenticated) {
-          showSnackBar.show_error(state.message!, context);
+          showSnackBar.show_error(
+            _getTranslatedMessage(context, state.message!),
+            context,
+          );
         }
       },
       child: GestureDetector(
@@ -124,9 +128,9 @@ class _LoginState extends State<Login> {
       ),
       padding: const EdgeInsets.only(top: 50),
       child: Center(
-        child: const Text(
-          'HELLO SIGN IN',
-          style: TextStyle(
+        child: Text(
+          AppLocalizations.of(context)!.hello_signin,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.w700,
@@ -167,7 +171,7 @@ class _LoginState extends State<Login> {
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF0288D1)),
-        hintText: 'Joydeo@gmail.com',
+        hintText: AppLocalizations.of(context)!.email_hint,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -191,7 +195,7 @@ class _LoginState extends State<Login> {
       obscureText: passVisible,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF0288D1)),
-        hintText: 'Password',
+        hintText: AppLocalizations.of(context)!.password,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -217,9 +221,9 @@ class _LoginState extends State<Login> {
       alignment: Alignment.centerRight,
       child: GestureDetector(
         onTap: tapToResetPass,
-        child: const Text(
-          'Forgot password?',
-          style: TextStyle(
+        child: Text(
+          AppLocalizations.of(context)!.forgot_password,
+          style: const TextStyle(
             color: Color(0xFF0288D1),
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -242,9 +246,9 @@ class _LoginState extends State<Login> {
         child:
             isLoading
                 ? Loading(heightWidth: size.width * 0.08, color: Colors.white)
-                : const Text(
-                  'SIGN IN',
-                  style: TextStyle(
+                : Text(
+                  AppLocalizations.of(context)!.signin_button,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -260,14 +264,14 @@ class _LoginState extends State<Login> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "Don't have account? ",
+          AppLocalizations.of(context)!.dont_have_account,
           style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
         ),
         GestureDetector(
           onTap: tapToRegister,
-          child: const Text(
-            'Sign up',
-            style: TextStyle(
+          child: Text(
+            AppLocalizations.of(context)!.signup_link,
+            style: const TextStyle(
               color: Color(0xFF0288D1),
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -286,5 +290,43 @@ class _LoginState extends State<Login> {
       decoration: const BoxDecoration(shape: BoxShape.circle, border: Border()),
       child: Image(image: AssetImage(iconPath), fit: BoxFit.cover),
     );
+  }
+
+  String _getTranslatedMessage(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (message) {
+      case 'auth_error_user_not_found':
+        return l10n.auth_error_user_not_found;
+      case 'auth_error_wrong_password':
+        return l10n.auth_error_wrong_password;
+      case 'auth_error_invalid_email':
+        return l10n.auth_error_invalid_email;
+      case 'auth_error_user_disabled':
+        return l10n.auth_error_user_disabled;
+      case 'auth_error_too_many_requests':
+        return l10n.auth_error_too_many_requests;
+      case 'auth_error_network_failed':
+        return l10n.auth_error_network_failed;
+      case 'auth_error_invalid_credential':
+        return l10n.auth_error_invalid_credential;
+      case 'auth_error_email_already_in_use':
+        return l10n.auth_error_email_already_in_use;
+      case 'auth_error_weak_password':
+        return l10n.auth_error_weak_password;
+      case 'auth_error_operation_not_allowed':
+        return l10n.auth_error_operation_not_allowed;
+      case 'auth_login_failed':
+        return l10n.auth_login_failed;
+      case 'auth_register_failed':
+        return l10n.auth_register_failed;
+      case 'auth_check_failed':
+        return l10n.auth_check_failed;
+      case 'auth_reset_failed':
+        return l10n.auth_reset_failed;
+      case 'auth_error_default':
+        return l10n.auth_error_default;
+      default:
+        return message;
+    }
   }
 }

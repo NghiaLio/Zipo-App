@@ -43,28 +43,28 @@ class Authservice implements Authrepo {
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = 'Tài khoản không tồn tại';
+          errorMessage = 'auth_error_user_not_found';
           break;
         case 'wrong-password':
-          errorMessage = 'Mật khẩu không đúng';
+          errorMessage = 'auth_error_wrong_password';
           break;
         case 'invalid-email':
-          errorMessage = 'Email không hợp lệ';
+          errorMessage = 'auth_error_invalid_email';
           break;
         case 'user-disabled':
-          errorMessage = 'Tài khoản đã bị vô hiệu hóa';
+          errorMessage = 'auth_error_user_disabled';
           break;
         case 'too-many-requests':
-          errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau';
+          errorMessage = 'auth_error_too_many_requests';
           break;
         case 'network-request-failed':
-          errorMessage = 'Lỗi kết nối mạng';
+          errorMessage = 'auth_error_network_failed';
           break;
         case 'invalid-credential':
-          errorMessage = 'Email hoặc mật khẩu không đúng';
+          errorMessage = 'auth_error_invalid_credential';
           break;
         default:
-          errorMessage = 'Đăng nhập thất bại: ${e.message}';
+          errorMessage = 'auth_error_default';
       }
       throw Exception(errorMessage);
     }
@@ -106,22 +106,22 @@ class Authservice implements Authrepo {
       String errorMessage;
       switch (e.code) {
         case 'email-already-in-use':
-          errorMessage = 'Email đã được sử dụng';
+          errorMessage = 'auth_error_email_already_in_use';
           break;
         case 'invalid-email':
-          errorMessage = 'Email không hợp lệ';
+          errorMessage = 'auth_error_invalid_email';
           break;
         case 'operation-not-allowed':
-          errorMessage = 'Tính năng đăng ký đã bị tắt';
+          errorMessage = 'auth_error_operation_not_allowed';
           break;
         case 'weak-password':
-          errorMessage = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn';
+          errorMessage = 'auth_error_weak_password';
           break;
         case 'network-request-failed':
-          errorMessage = 'Lỗi kết nối mạng';
+          errorMessage = 'auth_error_network_failed';
           break;
         default:
-          errorMessage = 'Đăng ký thất bại: ${e.message}';
+          errorMessage = 'auth_error_default';
       }
       throw Exception(errorMessage);
     }

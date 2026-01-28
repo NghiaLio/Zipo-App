@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/auth/authBloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
@@ -35,15 +36,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         title: Text(
-          'Cá nhân',
-          style: TextStyle(
-            color: Colors.black,
+          AppLocalizations.of(context)!.profile_tab,
+          style: theme.textTheme.titleLarge?.copyWith(
             fontSize: ResponsiveHelper.getFontSize(context, 24),
             fontWeight: FontWeight.bold,
           ),
@@ -52,15 +55,13 @@ class _ProfilePageState extends State<ProfilePage> {
           IconButton(
             icon: Icon(
               Icons.settings_outlined,
-              color: Colors.black,
+              color: colorScheme.onSurface,
               size: ResponsiveHelper.getFontSize(context, 24),
             ),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
@@ -77,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Error: ${state.error}',
+                    '${AppLocalizations.of(context)!.error_label}: ${state.error}',
                     style: TextStyle(
                       fontSize: ResponsiveHelper.getFontSize(context, 16),
                       color: Colors.red,
@@ -86,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _reloadUserData,
-                    child: const Text('Thử lại'),
+                    child: Text(AppLocalizations.of(context)!.retry_button),
                   ),
                 ],
               ),
@@ -99,11 +100,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Không tìm thấy thông tin người dùng'),
+                  Text(AppLocalizations.of(context)!.user_not_found),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _reloadUserData,
-                    child: const Text('Tải lại'),
+                    child: Text(AppLocalizations.of(context)!.reload_button),
                   ),
                 ],
               ),
@@ -116,12 +117,15 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   Container(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
                         CircleAvatar(
                           radius: 50,
+                          backgroundColor: colorScheme.onSurface.withOpacity(
+                            0.1,
+                          ),
                           backgroundImage: CachedNetworkImageProvider(
                             user.avatarUrl?.isNotEmpty == true
                                 ? user.avatarUrl!
@@ -131,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 16),
                         Text(
                           user.userName,
-                          style: TextStyle(
+                          style: theme.textTheme.titleLarge?.copyWith(
                             fontSize: ResponsiveHelper.getFontSize(context, 22),
                             fontWeight: FontWeight.bold,
                           ),
@@ -139,20 +143,24 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 4),
                         Text(
                           user.email,
-                          style: TextStyle(
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             fontSize: ResponsiveHelper.getFontSize(context, 14),
-                            color: Colors.grey[600],
+                            color: colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _buildStatItem(context, '234', 'Bài viết'),
+                            _buildStatItem(
+                              context,
+                              '234',
+                              AppLocalizations.of(context)!.posts_stat,
+                            ),
                             _buildStatItem(
                               context,
                               user.friends?.length.toString() ?? '0',
-                              'Bạn bè',
+                              AppLocalizations.of(context)!.friends_stat,
                             ),
                           ],
                         ),
@@ -161,12 +169,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     child: Column(
                       children: [
                         ProfileMenuItem(
                           icon: Icons.person_outline,
-                          title: 'Thông tin cá nhân',
+                          title:
+                              AppLocalizations.of(context)!.personal_info_menu,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -179,7 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         ProfileMenuItem(
                           icon: Icons.people_outline,
-                          title: 'Bạn bè',
+                          title: AppLocalizations.of(context)!.friends_menu,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -191,7 +200,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         ProfileMenuItem(
                           icon: Icons.notifications_outlined,
-                          title: 'Thông báo',
+                          title:
+                              AppLocalizations.of(context)!.notifications_menu,
                           onTap: () {},
                         ),
                       ],
@@ -199,10 +209,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     child: ProfileMenuItem(
                       icon: Icons.info_outline,
-                      title: 'Giới thiệu',
+                      title: AppLocalizations.of(context)!.about_menu,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -215,14 +225,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     child: ProfileMenuItem(
                       icon: Icons.logout,
-                      title: 'Đăng xuất',
+                      title: AppLocalizations.of(context)!.logout_menu,
                       onTap: () {
                         context.read<AuthBloc>().add(LogoutEvent());
                       },
-                      textColor: Colors.red,
+                      textColor: colorScheme.error,
                     ),
                   ),
                 ],
@@ -235,21 +245,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildStatItem(BuildContext context, String count, String label) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Column(
       children: [
         Text(
           count,
-          style: TextStyle(
+          style: theme.textTheme.titleMedium?.copyWith(
             fontSize: ResponsiveHelper.getFontSize(context, 20),
             fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
+          style: theme.textTheme.bodyMedium?.copyWith(
             fontSize: ResponsiveHelper.getFontSize(context, 14),
-            color: Colors.grey[600],
+            color: colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
       ],

@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 class ThemeSetting extends StatelessWidget {
   final String selectedTheme;
   final ValueChanged<String> onChanged;
 
   const ThemeSetting({
-    Key? key,
+    super.key,
     required this.selectedTheme,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: () {
         showModalBottomSheet(
           context: context,
+          backgroundColor: colorScheme.surface,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
@@ -34,12 +39,12 @@ class ThemeSetting extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF0288D1).withOpacity(0.1),
+                color: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.palette_outlined,
-                color: Color(0xFF0288D1),
+                color: colorScheme.primary,
                 size: 22,
               ),
             ),
@@ -48,35 +53,42 @@ class ThemeSetting extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Giao diện',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  Text(
+                    AppLocalizations.of(context)!.interface_section,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _getThemeLabel(selectedTheme),
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    _getThemeLabel(context, selectedTheme),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
           ],
         ),
       ),
     );
   }
 
-  String _getThemeLabel(String theme) {
+  String _getThemeLabel(BuildContext context, String theme) {
     switch (theme) {
-      case 'light':
-        return 'Sáng';
-      case 'dark':
-        return 'Tối';
-      case 'auto':
-        return 'Tự động';
+      case 'Light':
+        return AppLocalizations.of(context)!.light_theme;
+      case 'Dark':
+        return AppLocalizations.of(context)!.dark_theme;
+      case 'System':
+        return AppLocalizations.of(context)!.system_theme;
       default:
-        return 'Sáng';
+        return AppLocalizations.of(context)!.light_theme;
     }
   }
 }
@@ -86,51 +98,82 @@ class ThemeBottomSheet extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   const ThemeBottomSheet({
-    Key? key,
+    super.key,
     required this.selectedTheme,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Chọn giao diện',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)!.select_theme_title,
+            style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 20),
           RadioListTile<String>(
-            title: const Text('Sáng'),
-            subtitle: const Text('Giao diện sáng'),
-            value: 'light',
+            title: Text(
+              AppLocalizations.of(context)!.light_theme,
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              AppLocalizations.of(context)!.light_theme_desc,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            value: 'Light',
             groupValue: selectedTheme,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: colorScheme.primary,
             onChanged: (value) {
               onChanged(value!);
               Navigator.pop(context);
             },
           ),
           RadioListTile<String>(
-            title: const Text('Tối'),
-            subtitle: const Text('Giao diện tối'),
-            value: 'dark',
+            title: Text(
+              AppLocalizations.of(context)!.dark_theme,
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              AppLocalizations.of(context)!.dark_theme_desc,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            value: 'Dark',
             groupValue: selectedTheme,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: colorScheme.primary,
             onChanged: (value) {
               onChanged(value!);
               Navigator.pop(context);
             },
           ),
           RadioListTile<String>(
-            title: const Text('Tự động'),
-            subtitle: const Text('Theo cài đặt hệ thống'),
-            value: 'auto',
+            title: Text(
+              AppLocalizations.of(context)!.system_theme,
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              AppLocalizations.of(context)!.system_theme_desc,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+            value: 'System',
             groupValue: selectedTheme,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: colorScheme.primary,
             onChanged: (value) {
               onChanged(value!);
               Navigator.pop(context);

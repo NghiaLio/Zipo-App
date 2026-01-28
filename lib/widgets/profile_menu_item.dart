@@ -16,24 +16,28 @@ class ProfileMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: textColor ?? Colors.black87),
+            Icon(icon, color: textColor ?? colorScheme.onSurface, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: theme.textTheme.bodyLarge?.copyWith(
                   fontSize: 16,
-                  color: textColor ?? Colors.black87,
+                  color: textColor ?? colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(Icons.chevron_right, color: theme.disabledColor, size: 20),
           ],
         ),
       ),

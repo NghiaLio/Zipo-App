@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authBloc.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
 import 'package:maintain_chat_app/bloc/auth/authStates.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 import '../../widgets/Loading.dart';
 import '../../widgets/TopSnackBar.dart';
@@ -89,40 +90,40 @@ class _RegisterState extends State<Register> {
       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
     ).hasMatch(value!);
     if (value.isEmpty) {
-      return 'Enter your email';
+      return AppLocalizations.of(context)!.enter_email;
     }
     if (!emailValid) {
-      return 'Email not correct';
+      return AppLocalizations.of(context)!.email_not_correct;
     }
     return null;
   }
 
   String? validatedName(String? value) {
     if (value!.isEmpty) {
-      return 'Enter your name';
+      return AppLocalizations.of(context)!.enter_name;
     }
     if (value.length < 4) {
-      return 'Name length is more 4 character';
+      return AppLocalizations.of(context)!.name_too_short;
     }
     return null;
   }
 
   String? validatedPass(String? value) {
     if (value!.isEmpty) {
-      return 'Enter your password';
+      return AppLocalizations.of(context)!.enter_password;
     }
     if (value.length < 6) {
-      return 'Password length is more 6 character';
+      return AppLocalizations.of(context)!.password_too_short;
     }
     return null;
   }
 
   String? validatedConfirmpass(String? value) {
     if (value!.isEmpty) {
-      return 'Enter your confirm password';
+      return AppLocalizations.of(context)!.enter_confirm_password;
     }
     if (value != passController.text.trim()) {
-      return 'Confirm password not true';
+      return AppLocalizations.of(context)!.confirm_password_not_match;
     }
     return null;
   }
@@ -153,7 +154,10 @@ class _RegisterState extends State<Register> {
         if (state.message != null &&
             state.message!.isNotEmpty &&
             !state.isAuthenticated) {
-          showSnackBar.show_error(state.message!, context);
+          showSnackBar.show_error(
+            _getTranslatedMessage(context, state.message!),
+            context,
+          );
         }
       },
       child: GestureDetector(
@@ -185,9 +189,9 @@ class _RegisterState extends State<Register> {
       ),
       padding: const EdgeInsets.only(top: 50),
       child: Center(
-        child: const Text(
-          'CREATE YOUR ACCOUNT',
-          style: TextStyle(
+        child: Text(
+          AppLocalizations.of(context)!.create_account_title,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 26,
             fontWeight: FontWeight.w700,
@@ -233,7 +237,7 @@ class _RegisterState extends State<Register> {
       validator: (value) => validatedName(value),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF0288D1)),
-        hintText: 'Full Name',
+        hintText: AppLocalizations.of(context)!.full_name,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -254,7 +258,7 @@ class _RegisterState extends State<Register> {
       validator: (value) => validatedEmail(value),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF0288D1)),
-        hintText: 'Phone or Email',
+        hintText: AppLocalizations.of(context)!.phone_or_email,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -275,7 +279,7 @@ class _RegisterState extends State<Register> {
       validator: (value) => validatedPass(value),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF0288D1)),
-        hintText: 'Password',
+        hintText: AppLocalizations.of(context)!.password,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -303,7 +307,7 @@ class _RegisterState extends State<Register> {
       validator: (value) => validatedConfirmpass(value),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF0288D1)),
-        hintText: 'Confirm Password',
+        hintText: AppLocalizations.of(context)!.confirm_password,
         hintStyle: TextStyle(color: Colors.grey.shade500),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Color(0xFFB3E5FC)),
@@ -337,9 +341,9 @@ class _RegisterState extends State<Register> {
         child:
             isLoading
                 ? Loading(heightWidth: size.width * 0.08, color: Colors.white)
-                : const Text(
-                  'SIGN UP',
-                  style: TextStyle(
+                : Text(
+                  AppLocalizations.of(context)!.signup_button,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -355,14 +359,14 @@ class _RegisterState extends State<Register> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          "Already have account? ",
+          AppLocalizations.of(context)!.already_have_account,
           style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
         ),
         GestureDetector(
           onTap: tapToSignIn,
-          child: const Text(
-            'Sign In',
-            style: TextStyle(
+          child: Text(
+            AppLocalizations.of(context)!.signin_link,
+            style: const TextStyle(
               color: Color(0xFF0288D1),
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -371,5 +375,43 @@ class _RegisterState extends State<Register> {
         ),
       ],
     );
+  }
+
+  String _getTranslatedMessage(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (message) {
+      case 'auth_error_user_not_found':
+        return l10n.auth_error_user_not_found;
+      case 'auth_error_wrong_password':
+        return l10n.auth_error_wrong_password;
+      case 'auth_error_invalid_email':
+        return l10n.auth_error_invalid_email;
+      case 'auth_error_user_disabled':
+        return l10n.auth_error_user_disabled;
+      case 'auth_error_too_many_requests':
+        return l10n.auth_error_too_many_requests;
+      case 'auth_error_network_failed':
+        return l10n.auth_error_network_failed;
+      case 'auth_error_invalid_credential':
+        return l10n.auth_error_invalid_credential;
+      case 'auth_error_email_already_in_use':
+        return l10n.auth_error_email_already_in_use;
+      case 'auth_error_weak_password':
+        return l10n.auth_error_weak_password;
+      case 'auth_error_operation_not_allowed':
+        return l10n.auth_error_operation_not_allowed;
+      case 'auth_login_failed':
+        return l10n.auth_login_failed;
+      case 'auth_register_failed':
+        return l10n.auth_register_failed;
+      case 'auth_check_failed':
+        return l10n.auth_check_failed;
+      case 'auth_reset_failed':
+        return l10n.auth_reset_failed;
+      case 'auth_error_default':
+        return l10n.auth_error_default;
+      default:
+        return message;
+    }
   }
 }

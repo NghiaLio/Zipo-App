@@ -50,7 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           state.copyWith(
             isLoading: false,
             isAuthenticated: false,
-            message: 'Đăng nhập thất bại',
+            message: 'auth_login_failed',
           ),
         );
       }
@@ -84,7 +84,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           state.copyWith(
             isLoading: false,
             isAuthenticated: false,
-            message: 'Tạo tài khoản thất bại',
+            message: 'auth_register_failed',
           ),
         );
       }
@@ -120,7 +120,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           isAuthenticated: false,
           user: null,
           isLoading: false,
-          message: 'Có lỗi khi kiểm tra xác thực',
+          message: 'auth_check_failed',
         ),
       );
     }
@@ -150,20 +150,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (mess != null) {
         emit(state.copyWith(isLoading: false, message: mess));
       } else {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            message: 'Đặt lại mật khẩu thất bại, thử lại sau',
-          ),
-        );
+        emit(state.copyWith(isLoading: false, message: 'auth_reset_failed'));
       }
     } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          message: 'Đặt lại mật khẩu thất bại, thử lại sau',
-        ),
-      );
+      emit(state.copyWith(isLoading: false, message: 'auth_reset_failed'));
     }
   }
 }

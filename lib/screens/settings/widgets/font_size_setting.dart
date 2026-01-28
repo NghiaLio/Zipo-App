@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 class FontSizeSetting extends StatelessWidget {
   final double fontSize;
   final ValueChanged<double> onChanged;
 
   const FontSizeSetting({
-    Key? key,
+    super.key,
     required this.fontSize,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: () {
         showModalBottomSheet(
           context: context,
+          backgroundColor: colorScheme.surface,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
@@ -33,12 +38,12 @@ class FontSizeSetting extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF0288D1).withOpacity(0.1),
+                color: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.text_fields,
-                color: Color(0xFF0288D1),
+                color: colorScheme.primary,
                 size: 22,
               ),
             ),
@@ -47,19 +52,26 @@ class FontSizeSetting extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Cỡ chữ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  Text(
+                    AppLocalizations.of(context)!.font_size_menu,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${fontSize.toInt()} px',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
           ],
         ),
       ),
@@ -92,39 +104,44 @@ class _FontSizeBottomSheetState extends State<FontSizeBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Chọn cỡ chữ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          Text(l10n.select_font_size_title, style: theme.textTheme.titleLarge),
           const SizedBox(height: 30),
           Text(
-            'Xin chào! Đây là tin nhắn mẫu',
-            style: TextStyle(fontSize: _currentSize),
+            l10n.sample_message,
+            style: theme.textTheme.bodyLarge?.copyWith(fontSize: _currentSize),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
           Row(
             children: [
-              const Icon(Icons.text_fields, size: 16),
+              Icon(Icons.text_fields, size: 16, color: colorScheme.onSurface),
               Expanded(
                 child: Slider(
                   value: _currentSize,
                   min: 12.0,
                   max: 24.0,
                   divisions: 12,
-                  activeColor: const Color(0xFF0288D1),
+                  activeColor: colorScheme.primary,
                   label: '${_currentSize.toInt()} px',
                   onChanged: (value) {
                     setState(() => _currentSize = value);
                   },
                 ),
               ),
-              const Icon(Icons.text_fields, size: 28),
+              Icon(Icons.text_fields, size: 28, color: colorScheme.onSurface),
             ],
           ),
           const SizedBox(height: 20),
@@ -136,15 +153,18 @@ class _FontSizeBottomSheetState extends State<FontSizeBottomSheet> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0288D1),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text(
-                'Xác nhận',
-                style: TextStyle(fontSize: 16, color: Colors.white),
+              child: Text(
+                l10n.accept_button,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onPrimary,
+                ),
               ),
             ),
           ),

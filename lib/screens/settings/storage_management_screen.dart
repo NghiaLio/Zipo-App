@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
+import 'package:maintain_chat_app/themes/app_colors.dart';
 
 class StorageManagementScreen extends StatelessWidget {
   const StorageManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Quản lý bộ nhớ',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Text(
+          AppLocalizations.of(context)!.storage_management_menu,
+          style: theme.textTheme.titleLarge,
         ),
       ),
       body: SingleChildScrollView(
@@ -32,7 +33,7 @@ class StorageManagementScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -43,34 +44,32 @@ class StorageManagementScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0288D1).withOpacity(0.1),
+                          color: colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.storage,
-                          color: Color(0xFF0288D1),
+                          color: colorScheme.primary,
                           size: 32,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Bộ nhớ đệm',
-                              style: TextStyle(
-                                fontSize: 18,
+                              AppLocalizations.of(context)!.cache_memory,
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Tối ưu hiệu suất ứng dụng',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
+                              AppLocalizations.of(
+                                context,
+                              )!.optimize_performance,
+                              style: theme.textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -78,13 +77,9 @@ class StorageManagementScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Bộ nhớ đệm giúp ứng dụng tải nhanh hơn bằng cách lưu trữ tạm thời hình ảnh, video và dữ liệu khác. Việc xóa bộ nhớ đệm sẽ giải phóng không gian lưu trữ nhưng có thể làm chậm ứng dụng trong lần sử dụng đầu tiên.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Colors.black87,
-                    ),
+                  Text(
+                    AppLocalizations.of(context)!.cache_description,
+                    style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -94,16 +89,16 @@ class StorageManagementScreen extends StatelessWidget {
                         _showClearCacheDialog(context);
                       },
                       icon: const Icon(Icons.cleaning_services, size: 20),
-                      label: const Text(
-                        'Giải phóng bộ nhớ đệm',
+                      label: Text(
+                        AppLocalizations.of(context)!.clear_cache_button,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0288D1),
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -120,30 +115,35 @@ class StorageManagementScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Lưu ý',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.notice_label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoItem(
                     Icons.info_outline,
-                    'Hình ảnh và video đã tải xuống sẽ không bị xóa',
+                    AppLocalizations.of(context)!.downloaded_media_notice,
+                    context,
                   ),
                   const SizedBox(height: 8),
                   _buildInfoItem(
                     Icons.refresh,
-                    'Dữ liệu đệm sẽ được tạo lại khi bạn sử dụng ứng dụng',
+                    AppLocalizations.of(context)!.cache_recreation_notice,
+                    context,
                   ),
                   const SizedBox(height: 8),
                   _buildInfoItem(
                     Icons.speed,
-                    'Ứng dụng có thể chạy chậm hơn sau khi xóa đệm',
+                    AppLocalizations.of(context)!.speed_notice,
+                    context,
                   ),
                 ],
               ),
@@ -154,18 +154,20 @@ class StorageManagementScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(IconData icon, String text) {
+  Widget _buildInfoItem(IconData icon, String text, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: Colors.grey[600]),
+        Icon(icon, size: 18, color: colorScheme.onSurface.withOpacity(0.6)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[700],
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
               height: 1.4,
             ),
           ),
@@ -175,24 +177,36 @@ class StorageManagementScreen extends StatelessWidget {
   }
 
   void _showClearCacheDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
+            backgroundColor: colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text(
-              'Xác nhận',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            title: Text(
+              AppLocalizations.of(context)!.clear_cache_confirm_title,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            content: const Text(
-              'Bạn có chắc chắn muốn giải phóng bộ nhớ đệm? Thao tác này sẽ xóa tất cả dữ liệu tạm thời.',
+            content: Text(
+              AppLocalizations.of(context)!.clear_cache_confirm_message,
+              style: theme.textTheme.bodyMedium,
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Hủy', style: TextStyle(color: Colors.grey[600])),
+                child: Text(
+                  'Hủy',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -200,13 +214,13 @@ class StorageManagementScreen extends StatelessWidget {
                   _showSuccessSnackBar(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0288D1),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Xác nhận'),
+                child: Text(AppLocalizations.of(context)!.accept_button),
               ),
             ],
           ),
@@ -214,16 +228,21 @@ class StorageManagementScreen extends StatelessWidget {
   }
 
   void _showSuccessSnackBar(BuildContext context) {
+    final theme = Theme.of(context);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 12),
-            Text('Đã giải phóng bộ nhớ đệm thành công'),
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(
+              AppLocalizations.of(context)!.clear_cache_success,
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+            ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

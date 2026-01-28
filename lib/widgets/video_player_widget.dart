@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
@@ -54,18 +55,29 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (_hasError) {
       return Container(
         width: widget.width,
         height: widget.height ?? 200,
-        color: Colors.grey[300],
-        child: const Center(
+        decoration: BoxDecoration(
+          color: theme.disabledColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 50, color: Colors.grey),
-              SizedBox(height: 8),
-              Text('Không thể tải video'),
+              Icon(Icons.error_outline, size: 40, color: theme.disabledColor),
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context)!.could_not_load_video,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.disabledColor,
+                ),
+              ),
             ],
           ),
         ),
@@ -76,8 +88,16 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       return Container(
         width: widget.width,
         height: widget.height ?? 200,
-        color: Colors.grey[200],
-        child: const Center(child: CircularProgressIndicator()),
+        decoration: BoxDecoration(
+          color: theme.disabledColor.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: colorScheme.primary,
+            strokeWidth: 2,
+          ),
+        ),
       );
     }
 
@@ -94,7 +114,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       child: Container(
         width: widget.width,
         height: widget.height,
-        color: Colors.black,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -105,12 +129,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             if (!_controller.value.isPlaying)
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.black38,
+                  color: Colors.black.withOpacity(0.4),
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(12),
                 child: const Icon(
-                  Icons.play_arrow,
+                  Icons.play_arrow_rounded,
                   color: Colors.white,
                   size: 40,
                 ),
@@ -123,10 +147,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               child: VideoProgressIndicator(
                 _controller,
                 allowScrubbing: true,
-                colors: const VideoProgressColors(
-                  playedColor: Color(0xFF0288D1),
-                  bufferedColor: Colors.grey,
-                  backgroundColor: Colors.white24,
+                colors: VideoProgressColors(
+                  playedColor: colorScheme.primary,
+                  bufferedColor: Colors.white24,
+                  backgroundColor: Colors.white10,
                 ),
               ),
             ),

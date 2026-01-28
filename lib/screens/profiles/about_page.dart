@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import '../../utils/responsive_helper.dart';
 
 class AboutPage extends StatelessWidget {
@@ -6,19 +7,22 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Giới thiệu',
-          style: TextStyle(
-            color: Colors.black,
+          AppLocalizations.of(context)!.about_title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: colorScheme.onSurface,
             fontSize: ResponsiveHelper.getFontSize(context, 20),
             fontWeight: FontWeight.bold,
           ),
@@ -33,7 +37,7 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -43,31 +47,31 @@ class AboutPage extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0288D1),
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.chat_bubble_outline,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 40,
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Maintain Chat App',
-                    style: TextStyle(
+                    'Zipo Social',
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 24),
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Phiên bản 1.0.0',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.version_label('1.0.0'),
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 14),
-                      color: Colors.grey[600],
+                      color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -80,26 +84,26 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Về ứng dụng',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.about_app_section,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 18),
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Maintain Chat App là một ứng dụng nhắn tin hiện đại được thiết kế để kết nối mọi người một cách dễ dàng và bảo mật. Với giao diện thân thiện và tính năng phong phú, ứng dụng mang đến trải nghiệm trò chuyện tuyệt vời cho người dùng.',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.about_app_description,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 14),
-                      color: Colors.grey[700],
+                      color: colorScheme.onSurface.withOpacity(0.8),
                       height: 1.5,
                     ),
                   ),
@@ -113,54 +117,54 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tính năng chính',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.main_features_section,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 18),
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureItem(
                     context,
                     Icons.message,
-                    'Nhắn tin thời gian thực',
-                    'Gửi và nhận tin nhắn tức thì với bạn bè',
+                    AppLocalizations.of(context)!.realtime_messaging_title,
+                    AppLocalizations.of(context)!.realtime_messaging_desc,
                   ),
                   const SizedBox(height: 12),
                   _buildFeatureItem(
                     context,
                     Icons.image,
-                    'Chia sẻ hình ảnh & video',
-                    'Chia sẻ khoảnh khắc với chất lượng cao',
+                    AppLocalizations.of(context)!.media_sharing_title,
+                    AppLocalizations.of(context)!.media_sharing_desc,
                   ),
                   const SizedBox(height: 12),
                   _buildFeatureItem(
                     context,
                     Icons.people,
-                    'Quản lý bạn bè',
-                    'Kết nối và quản lý danh sách bạn bè dễ dàng',
+                    AppLocalizations.of(context)!.friend_management_title,
+                    AppLocalizations.of(context)!.friend_management_desc,
                   ),
                   const SizedBox(height: 12),
                   _buildFeatureItem(
                     context,
                     Icons.notifications,
-                    'Thông báo thông minh',
-                    'Nhận thông báo quan trọng kịp thời',
+                    AppLocalizations.of(context)!.smart_notifications_title,
+                    AppLocalizations.of(context)!.smart_notifications_desc,
                   ),
                   const SizedBox(height: 12),
                   _buildFeatureItem(
                     context,
                     Icons.security,
-                    'Bảo mật cao',
-                    'Dữ liệu được mã hóa và bảo vệ an toàn',
+                    AppLocalizations.of(context)!.high_security_title,
+                    AppLocalizations.of(context)!.high_security_desc,
                   ),
                 ],
               ),
@@ -172,44 +176,44 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Về chúng tôi',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.about_us_section,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 18),
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Maintain Chat App được phát triển bởi đội ngũ kỹ sư tài năng với sứ mệnh tạo ra những sản phẩm công nghệ chất lượng cao, góp phần kết nối cộng đồng và nâng cao trải nghiệm số.',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.about_us_description,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 14),
-                      color: Colors.grey[700],
+                      color: colorScheme.onSurface.withOpacity(0.8),
                       height: 1.5,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Liên hệ với chúng tôi:',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.contact_us_label,
+                    style: theme.textTheme.titleSmall?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 16),
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Email: support@maintainchat.com\nWebsite: www.maintainchat.com\nHotline: 1900-xxxx',
-                    style: TextStyle(
+                    AppLocalizations.of(context)!.contact_info,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontSize: ResponsiveHelper.getFontSize(context, 14),
-                      color: Colors.grey[700],
+                      color: colorScheme.onSurface.withOpacity(0.8),
                       height: 1.6,
                     ),
                   ),
@@ -223,15 +227,15 @@ class AboutPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
                 child: Text(
-                  '© 2024 Maintain Chat App. Tất cả quyền được bảo lưu.',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.copyright_text,
+                  style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: ResponsiveHelper.getFontSize(context, 12),
-                    color: Colors.grey[500],
+                    color: colorScheme.onSurface.withOpacity(0.4),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -251,15 +255,17 @@ class AboutPage extends StatelessWidget {
     String title,
     String description,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF0288D1).withOpacity(0.1),
+            color: colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: const Color(0xFF0288D1), size: 20),
+          child: Icon(icon, color: colorScheme.primary, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -268,18 +274,18 @@ class AboutPage extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: theme.textTheme.titleSmall?.copyWith(
                   fontSize: ResponsiveHelper.getFontSize(context, 14),
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 description,
-                style: TextStyle(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: ResponsiveHelper.getFontSize(context, 12),
-                  color: Colors.grey[600],
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
             ],

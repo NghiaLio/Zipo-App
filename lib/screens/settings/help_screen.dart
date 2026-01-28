@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Trợ giúp',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Text(
+          AppLocalizations.of(context)!.help_menu,
+          style: theme.textTheme.titleLarge,
         ),
       ),
       body: SingleChildScrollView(
@@ -32,7 +32,7 @@ class HelpScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -43,34 +43,32 @@ class HelpScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0288D1).withOpacity(0.1),
+                          color: colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.help_outline,
-                          color: Color(0xFF0288D1),
+                          color: colorScheme.primary,
                           size: 32,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Chúng tôi sẵn sàng hỗ trợ',
-                              style: TextStyle(
-                                fontSize: 18,
+                              AppLocalizations.of(context)!.help_support_title,
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Tìm câu trả lời và liên hệ hỗ trợ',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
+                              AppLocalizations.of(
+                                context,
+                              )!.help_support_subtitle,
+                              style: theme.textTheme.bodySmall,
                             ),
                           ],
                         ),
@@ -81,47 +79,57 @@ class HelpScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildSectionTitle('Câu hỏi thường gặp'),
+            _buildSectionTitle(
+              AppLocalizations.of(context)!.faq_section,
+              context,
+            ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
                   _buildFAQItem(
-                    'Làm thế nào để gửi tin nhắn?',
-                    'Chọn người liên hệ từ danh sách hoặc tìm kiếm, sau đó nhập tin nhắn ở ô chat và nhấn gửi.',
+                    AppLocalizations.of(context)!.faq_how_to_send_msg_q,
+                    AppLocalizations.of(context)!.faq_how_to_send_msg_a,
                     Icons.message_outlined,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildFAQItem(
-                    'Làm thế nào để xóa tin nhắn?',
-                    'Nhấn giữ vào tin nhắn bạn muốn xóa, sau đó chọn "Xóa" từ menu hiện lên. Bạn có thể xóa cho mình hoặc cho tất cả mọi người.',
+                    AppLocalizations.of(context)!.faq_how_to_delete_msg_q,
+                    AppLocalizations.of(context)!.faq_how_to_delete_msg_a,
                     Icons.delete_outline,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildFAQItem(
-                    'Làm thế nào để thay đổi ảnh đại diện?',
-                    'Vào phần Hồ sơ, chạm vào ảnh đại diện hiện tại, sau đó chọn "Thay đổi ảnh" để tải ảnh mới từ thư viện hoặc chụp ảnh.',
+                    AppLocalizations.of(context)!.faq_how_to_change_avatar_q,
+                    AppLocalizations.of(context)!.faq_how_to_change_avatar_a,
                     Icons.account_circle_outlined,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildFAQItem(
-                    'Làm thế nào để tắt thông báo?',
-                    'Vào Cài đặt > Thông báo, sau đó tắt các tùy chọn thông báo bạn không muốn nhận.',
+                    AppLocalizations.of(context)!.faq_how_to_disable_notif_q,
+                    AppLocalizations.of(context)!.faq_how_to_disable_notif_a,
                     Icons.notifications_off_outlined,
+                    context,
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            _buildSectionTitle('Liên hệ hỗ trợ'),
+            _buildSectionTitle(
+              AppLocalizations.of(context)!.contact_support_section,
+              context,
+            ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -130,28 +138,32 @@ class HelpScreen extends StatelessWidget {
                     Icons.email_outlined,
                     'Email',
                     'support@chatapp.com',
-                    'Gửi email cho chúng tôi',
+                    AppLocalizations.of(context)!.contact_email_desc,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildContactItem(
                     Icons.phone_outlined,
-                    'Hotline',
+                    AppLocalizations.of(context)!.contact_hotline_label,
                     '1900 xxxx',
-                    'Gọi điện hỗ trợ (8:00 - 22:00)',
+                    AppLocalizations.of(context)!.contact_hotline_desc,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildContactItem(
                     Icons.chat_bubble_outline,
                     'Live Chat',
-                    'Trò chuyện trực tuyến',
-                    'Phản hồi nhanh trong vài phút',
+                    AppLocalizations.of(context)!.contact_livechat_label,
+                    AppLocalizations.of(context)!.contact_livechat_desc,
+                    context,
                   ),
                   const Divider(height: 1),
                   _buildContactItem(
                     Icons.language,
                     'Website',
                     'www.chatapp.com/help',
-                    'Truy cập trung tâm trợ giúp',
+                    AppLocalizations.of(context)!.contact_website_desc,
+                    context,
                   ),
                 ],
               ),
@@ -161,24 +173,24 @@ class HelpScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF0288D1).withOpacity(0.3),
-                ),
+                border: Border.all(color: colorScheme.primary.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline,
-                    color: Color(0xFF0288D1),
+                    color: colorScheme.primary,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Thời gian phản hồi trung bình: 2-4 giờ làm việc',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                      AppLocalizations.of(context)!.average_response_time,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ],
@@ -191,43 +203,54 @@ class HelpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+  Widget _buildSectionTitle(String title, BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      color: colorScheme.background,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 13,
+        title.toUpperCase(),
+        style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w600,
-          color: Colors.grey[600],
-          letterSpacing: 0.5,
+          color: colorScheme.onSurface.withOpacity(0.5),
+          letterSpacing: 1.0,
         ),
       ),
     );
   }
 
-  Widget _buildFAQItem(String question, String answer, IconData icon) {
+  Widget _buildFAQItem(
+    String question,
+    String answer,
+    IconData icon,
+    BuildContext context,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ExpansionTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0288D1).withOpacity(0.1),
+          color: colorScheme.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF0288D1), size: 20),
+        child: Icon(icon, color: colorScheme.primary, size: 20),
       ),
       title: Text(
         question,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
       ),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Text(
             answer,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
               height: 1.5,
             ),
           ),
@@ -241,20 +264,24 @@ class HelpScreen extends StatelessWidget {
     String title,
     String value,
     String subtitle,
+    BuildContext context,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF0288D1).withOpacity(0.1),
+          color: colorScheme.primary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: const Color(0xFF0288D1), size: 22),
+        child: Icon(icon, color: colorScheme.primary, size: 22),
       ),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,23 +289,24 @@ class HelpScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF0288D1),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.primary,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
         ],
       ),
       trailing: Icon(
         Icons.arrow_forward_ios,
         size: 16,
-        color: Colors.grey[400],
+        color: colorScheme.onSurface.withOpacity(0.4),
       ),
       onTap: () {
         // Handle contact action

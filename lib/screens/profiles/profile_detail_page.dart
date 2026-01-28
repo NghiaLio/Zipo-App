@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/constants/storagePath.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
@@ -71,10 +72,16 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
           _currentAvatarPath = image.path;
         });
 
-        showSnackBar.show_success('Ảnh đã được chọn', context);
+        showSnackBar.show_success(
+          AppLocalizations.of(context)!.image_selected_success,
+          context,
+        );
       }
     } catch (e) {
-      showSnackBar.show_error('Lỗi khi chọn ảnh: $e', context);
+      showSnackBar.show_error(
+        '${AppLocalizations.of(context)!.image_pick_error}: $e',
+        context,
+      );
     }
   }
 
@@ -94,7 +101,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
   void _saveProfile() async {
     if (_userNameController.text.trim().isEmpty) {
-      showSnackBar.show_error('Tên không được để trống', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.name_empty_error,
+        context,
+      );
       return;
     }
 
@@ -113,7 +123,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
           AVATAR_IMAGE_BUCKET,
         );
       } catch (e) {
-        showSnackBar.show_error('Lỗi khi tải ảnh lên: $e', context);
+        showSnackBar.show_error(
+          '${AppLocalizations.of(context)!.error_occurred}: $e',
+          context,
+        );
         setState(() {
           _isUploadingImage = false;
         });
@@ -145,39 +158,58 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
       _isUploadingImage = false;
     });
 
-    showSnackBar.show_success('Đã lưu thông tin', context);
+    showSnackBar.show_success(
+      AppLocalizations.of(context)!.info_saved_success,
+      context,
+    );
 
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () {
             if (_isEditing) {
               showDialog(
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                      title: const Text('Hủy chỉnh sửa?'),
-                      content: const Text('Các thay đổi sẽ không được lưu'),
+                      backgroundColor: colorScheme.surface,
+                      title: Text(
+                        AppLocalizations.of(context)!.cancel_edit_title,
+                        style: theme.textTheme.titleLarge,
+                      ),
+                      content: Text(
+                        AppLocalizations.of(context)!.cancel_edit_message,
+                        style: theme.textTheme.bodyMedium,
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Ở lại'),
+                          child: Text(
+                            AppLocalizations.of(context)!.stay_button,
+                            style: TextStyle(color: colorScheme.primary),
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context);
                             Navigator.pop(context);
                           },
-                          child: const Text('Hủy'),
+                          child: Text(
+                            AppLocalizations.of(context)!.confirm_cancel_button,
+                            style: TextStyle(color: colorScheme.error),
+                          ),
                         ),
                       ],
                     ),
@@ -188,9 +220,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
           },
         ),
         title: Text(
-          'Thông tin cá nhân',
-          style: TextStyle(
-            color: Colors.black,
+          AppLocalizations.of(context)!.personal_info_title,
+          style: theme.textTheme.titleLarge?.copyWith(
             fontSize: ResponsiveHelper.getFontSize(context, 20),
             fontWeight: FontWeight.bold,
           ),
@@ -198,12 +229,12 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
         actions: [
           if (!widget.isViewOnly && !_isEditing)
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.black),
+              icon: Icon(Icons.edit, color: colorScheme.onSurface),
               onPressed: _toggleEditMode,
             ),
           if (!widget.isViewOnly && _isEditing)
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
+              icon: Icon(Icons.close, color: colorScheme.error),
               onPressed: _toggleEditMode,
             ),
         ],
@@ -211,7 +242,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
       body: BlocListener<UserBloc, UserState>(
         listener: (context, state) {
           if (state.error != null) {
-            showSnackBar.show_error('Lỗi: ${state.error}', context);
+            showSnackBar.show_error(
+              '${AppLocalizations.of(context)!.error_label}: ${state.error}',
+              context,
+            );
           }
         },
         child: SingleChildScrollView(
@@ -222,7 +256,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -230,7 +264,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.grey[300],
+                        backgroundColor: colorScheme.onSurface.withOpacity(0.1),
                         backgroundImage:
                             _currentAvatarPath != null
                                 ? FileImage(File(_currentAvatarPath!))
@@ -242,8 +276,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                     : null),
                         child:
                             _isUploadingImage
-                                ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                                ? CircularProgressIndicator(
+                                  color: colorScheme.primary,
                                 )
                                 : (_currentAvatarPath == null &&
                                         (_originalAvatarUrl == null ||
@@ -251,7 +285,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                     ? Icon(
                                       Icons.person,
                                       size: 60,
-                                      color: Colors.grey[600],
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.3,
+                                      ),
                                     )
                                     : null),
                       ),
@@ -265,16 +301,16 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0288D1),
+                                color: colorScheme.primary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                   width: 2,
                                 ),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.camera_alt,
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                                 size: 20,
                               ),
                             ),
@@ -290,34 +326,34 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildInfoField(
-                      label: 'Tên hiển thị',
+                      label: AppLocalizations.of(context)!.display_name_label,
                       controller: _userNameController,
                       icon: Icons.person,
                       required: true,
                     ),
                     const Divider(height: 24),
                     _buildInfoField(
-                      label: 'Tên khác',
+                      label: AppLocalizations.of(context)!.other_name_label,
                       controller: _otherNameController,
                       icon: Icons.badge,
                     ),
                     const Divider(height: 24),
                     _buildInfoField(
-                      label: 'Số điện thoại',
+                      label: AppLocalizations.of(context)!.phone_number_label,
                       controller: _phoneController,
                       icon: Icons.phone,
                       keyboardType: TextInputType.phone,
                     ),
                     const Divider(height: 24),
                     _buildInfoField(
-                      label: 'Địa chỉ',
+                      label: AppLocalizations.of(context)!.address_label,
                       controller: _addressController,
                       icon: Icons.location_on,
                     ),
@@ -330,28 +366,28 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Thông tin khác',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.other_info_section,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontSize: ResponsiveHelper.getFontSize(context, 16),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
                     _buildReadOnlyInfo(
-                      label: 'Email',
+                      label: AppLocalizations.of(context)!.email_label,
                       value: widget.user.email,
                       icon: Icons.email,
                     ),
                     const Divider(height: 24),
                     _buildReadOnlyInfo(
-                      label: 'Số bạn bè',
+                      label: AppLocalizations.of(context)!.friends_stat,
                       value: widget.user.friends?.length.toString() ?? '0',
                       icon: Icons.people,
                     ),
@@ -366,18 +402,18 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                   child: ElevatedButton(
                     onPressed: _saveProfile,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0288D1),
+                      backgroundColor: colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
-                      'Lưu thay đổi',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.save_changes_button,
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         fontSize: ResponsiveHelper.getFontSize(context, 16),
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -398,22 +434,27 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
     bool required = false,
     TextInputType? keyboardType,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: Colors.grey[600]),
+            Icon(icon, size: 20, color: colorScheme.onSurface.withOpacity(0.6)),
             const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontSize: ResponsiveHelper.getFontSize(context, 14),
-                color: Colors.grey[600],
+                color: colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (required) const Text(' *', style: TextStyle(color: Colors.red)),
+            if (required)
+              Text(' *', style: TextStyle(color: colorScheme.error)),
           ],
         ),
         const SizedBox(height: 8),
@@ -421,17 +462,33 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
           controller: controller,
           enabled: _isEditing,
           keyboardType: keyboardType,
-          style: TextStyle(
+          style: theme.textTheme.bodyLarge?.copyWith(
             fontSize: ResponsiveHelper.getFontSize(context, 16),
-            color: _isEditing ? Colors.black : Colors.grey[700],
+            color:
+                _isEditing
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurface.withOpacity(0.7),
           ),
           decoration: InputDecoration(
             border: _isEditing ? const OutlineInputBorder() : InputBorder.none,
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: colorScheme.onSurface.withOpacity(0.2),
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: colorScheme.primary),
+              borderRadius: BorderRadius.circular(8),
+            ),
             contentPadding:
                 _isEditing
                     ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
                     : EdgeInsets.zero,
-            hintText: _isEditing ? 'Nhập $label' : null,
+            hintText: _isEditing ? l10n.enter_field_hint(label) : null,
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
           ),
         ),
       ],
@@ -443,9 +500,11 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
     required String value,
     required IconData icon,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
+        Icon(icon, size: 20, color: colorScheme.onSurface.withOpacity(0.6)),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
@@ -453,17 +512,17 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: ResponsiveHelper.getFontSize(context, 14),
-                  color: Colors.grey[600],
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 value,
-                style: TextStyle(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontSize: ResponsiveHelper.getFontSize(context, 16),
-                  color: Colors.grey[800],
+                  color: colorScheme.onSurface.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),

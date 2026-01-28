@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:maintain_chat_app/bloc/chat/chatBloc.dart';
 import 'package:maintain_chat_app/bloc/chat/chatEvent.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/messages/messageBloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageEvent.dart';
 import 'package:maintain_chat_app/utils/convert_time.dart';
@@ -36,15 +37,17 @@ class _ChatTileState extends State<ChatTile> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final avatarSize = ResponsiveHelper.getAvatarSize(context);
     final screenPadding = ResponsiveHelper.getScreenPadding(context);
     final verticalPadding = ResponsiveHelper.getResponsiveSize(
       context,
       12,
     ).clamp(10.0, 16.0);
-    final nameFontSize = ResponsiveHelper.getFontSize(context, 16);
-    final messageFontSize = ResponsiveHelper.getFontSize(context, 14);
-    final timeFontSize = ResponsiveHelper.getFontSize(context, 12);
+
     final badgeSize = ResponsiveHelper.getResponsiveSize(
       context,
       20,
@@ -53,6 +56,10 @@ class _ChatTileState extends State<ChatTile> {
       context,
       16,
     ).clamp(14.0, 18.0);
+
+    final bool isUnread =
+        widget.chat.unreadCount > 0 &&
+        widget.chat.senderID == widget.chat.participant?.id;
 
     return Slidable(
       key: ValueKey(widget.chat.id),
@@ -66,10 +73,12 @@ class _ChatTileState extends State<ChatTile> {
               );
               // TODO: Implement toggle notification logic
             },
-            backgroundColor: const Color(0xFF21B7CA),
+            backgroundColor: const Color(
+              0xFF21B7CA,
+            ), // Keeping info color as it's common for Slidable
             foregroundColor: Colors.white,
             icon: Icons.notifications_off,
-            label: 'Thông báo',
+            label: AppLocalizations.of(context)!.notification_label,
           ),
           SlidableAction(
             onPressed: (context) async {
@@ -77,10 +86,10 @@ class _ChatTileState extends State<ChatTile> {
               // Gọi sự kiện xóa chat
               context.read<ChatBloc>().add(DeleteChatEvent(widget.chat.id));
             },
-            backgroundColor: const Color(0xFFFE4A49),
-            foregroundColor: Colors.white,
+            backgroundColor: colorScheme.error,
+            foregroundColor: colorScheme.onError,
             icon: Icons.delete,
-            label: 'Xóa',
+            label: AppLocalizations.of(context)!.delete_action,
           ),
         ],
       ),
@@ -94,7 +103,10 @@ class _ChatTileState extends State<ChatTile> {
                 : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
-          color: _isPressed ? Colors.grey[200] : Colors.white,
+          color:
+              _isPressed
+                  ? theme.highlightColor.withOpacity(0.1)
+                  : colorScheme.surface,
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: screenPadding.left,
@@ -108,11 +120,11 @@ class _ChatTileState extends State<ChatTile> {
                             widget.chat.participant?.avatarUrl!.isEmpty == true
                         ? CircleAvatar(
                           radius: avatarSize / 2,
-                          backgroundColor: Colors.grey[300],
+                          backgroundColor: theme.disabledColor.withOpacity(0.2),
                           child: Icon(
                             Icons.person,
                             size: avatarSize * 0.6,
-                            color: Colors.white,
+                            color: theme.disabledColor,
                           ),
                         )
                         : CircleAvatar(
@@ -129,9 +141,14 @@ class _ChatTileState extends State<ChatTile> {
                           width: onlineIndicatorSize,
                           height: onlineIndicatorSize,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ), // Standard online green
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                            border: Border.all(
+                              color: colorScheme.surface,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -145,15 +162,12 @@ class _ChatTileState extends State<ChatTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.chat.participant?.userName ?? 'Unknown User',
-                        style: TextStyle(
-                          fontSize: nameFontSize,
+                        widget.chat.participant?.userName ??
+                            AppLocalizations.of(context)!.unknown_user,
+                        style: textTheme.titleMedium?.copyWith(
                           fontWeight:
-                              widget.chat.senderID ==
-                                          widget.chat.participant?.id &&
-                                      widget.chat.unreadCount > 0
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                              isUnread ? FontWeight.bold : FontWeight.w500,
+                          fontSize: ResponsiveHelper.getFontSize(context, 16),
                         ),
                       ),
                       SizedBox(
@@ -162,21 +176,17 @@ class _ChatTileState extends State<ChatTile> {
                       Text(
                         widget.chat.message.isNotEmpty
                             ? widget.chat.message
-                            : 'Hãy bắt đầu cuộc trò chuyện!',
-                        style: TextStyle(
-                          fontSize: messageFontSize,
+                            : AppLocalizations.of(
+                              context,
+                            )!.start_chat_invitation,
+                        style: textTheme.bodyMedium?.copyWith(
                           color:
-                              widget.chat.senderID ==
-                                          widget.chat.participant?.id &&
-                                      widget.chat.unreadCount > 0
-                                  ? Colors.black87
-                                  : Colors.grey[600],
+                              isUnread
+                                  ? colorScheme.onSurface
+                                  : colorScheme.onSurface.withOpacity(0.6),
                           fontWeight:
-                              widget.chat.senderID ==
-                                          widget.chat.participant?.id &&
-                                      widget.chat.unreadCount > 0
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              isUnread ? FontWeight.w600 : FontWeight.normal,
+                          fontSize: ResponsiveHelper.getFontSize(context, 14),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -191,25 +201,17 @@ class _ChatTileState extends State<ChatTile> {
                       ConvertTime.formatTimestamp(
                         DateTime.parse(widget.chat.time),
                       ),
-                      style: TextStyle(
-                        fontSize: timeFontSize,
+                      style: textTheme.bodySmall?.copyWith(
                         color:
-                            widget.chat.unreadCount > 0 &&
-                                    widget.chat.senderID ==
-                                        widget.chat.participant?.id
-                                ? const Color(0xFF0288D1)
-                                : Colors.grey[600],
+                            isUnread
+                                ? colorScheme.primary
+                                : colorScheme.onSurface.withOpacity(0.5),
                         fontWeight:
-                            widget.chat.unreadCount > 0 &&
-                                    widget.chat.senderID ==
-                                        widget.chat.participant?.id
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            isUnread ? FontWeight.w600 : FontWeight.normal,
+                        fontSize: ResponsiveHelper.getFontSize(context, 12),
                       ),
                     ),
-                    if (widget.chat.unreadCount > 0 &&
-                        widget.chat.senderID ==
-                            widget.chat.participant?.id) ...[
+                    if (isUnread) ...[
                       SizedBox(
                         height: ResponsiveHelper.getResponsiveSize(context, 4),
                       ),
@@ -219,17 +221,20 @@ class _ChatTileState extends State<ChatTile> {
                           minWidth: badgeSize,
                           minHeight: badgeSize,
                         ),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF0288D1),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             widget.chat.unreadCount.toString(),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: timeFontSize,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onPrimary,
                               fontWeight: FontWeight.bold,
+                              fontSize: ResponsiveHelper.getFontSize(
+                                context,
+                                11,
+                              ),
                             ),
                           ),
                         ),

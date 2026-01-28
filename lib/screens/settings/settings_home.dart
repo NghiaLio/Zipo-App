@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:maintain_chat_app/bloc/theme/themeCubit.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
+import 'package:maintain_chat_app/utils/colorUtils.dart';
+import 'package:maintain_chat_app/utils/localeUtils.dart';
+import 'package:maintain_chat_app/utils/themeUtils.dart';
 import 'widgets/language_setting.dart';
 import 'widgets/theme_setting.dart';
 import 'widgets/font_size_setting.dart';
@@ -16,37 +22,49 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String selectedLanguage = 'vi';
-  String selectedTheme = 'light';
-  double fontSize = 16.0;
+  late String selectedLanguage;
+  late String selectedTheme;
+  late double fontSize;
   bool autoDownloadImages = true;
   bool autoDownloadVideos = false;
   bool soundEnabled = true;
   bool vibrationEnabled = true;
   bool showOnlineStatus = true;
   bool readReceipts = true;
-  String chatWallpaper = 'default';
+  late String chatWallpaper;
+
+  @override
+  void initState() {
+    chatWallpaper = ColorUtils.colorToHex(
+      context.read<ThemeCubit>().state.color ?? const Color(0xFF29B6F6),
+    );
+    selectedTheme = ThemeUtils.themeModeToString(
+      context.read<ThemeCubit>().state.themeMode ?? ThemeMode.system,
+    );
+    fontSize = context.read<ThemeCubit>().state.fontSize ?? 16.0;
+    selectedLanguage = LocaleUtils.localeToString(context.read<ThemeCubit>().state.lang ?? const Locale('vi'));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: colorScheme.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
-          'Cài đặt',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Text(
+          AppLocalizations.of(context)!.settings_title,
+          style: theme.textTheme.titleLarge,
         ),
       ),
       body: SingleChildScrollView(
@@ -56,36 +74,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 10),
 
             // Giao diện
-            _buildSectionTitle('Giao diện'),
+            _buildSectionTitle(AppLocalizations.of(context)!.interface_section),
             Container(
-              color: Colors.white,
+              color: colorScheme.surface,
               child: Column(
                 children: [
                   LanguageSetting(
                     selectedLanguage: selectedLanguage,
                     onChanged: (value) {
                       setState(() => selectedLanguage = value);
+                      context.read<ThemeCubit>().changeLanguage(value);
                     },
                   ),
                   const Divider(height: 1, indent: 16),
                   ThemeSetting(
                     selectedTheme: selectedTheme,
                     onChanged: (value) {
-                      setState(() => selectedTheme = value);
+                      setState(() {
+                        selectedTheme = value;
+                        context.read<ThemeCubit>().changeThemeMode(
+                          selectedTheme,
+                        );
+                      });
                     },
                   ),
                   const Divider(height: 1, indent: 16),
                   FontSizeSetting(
                     fontSize: fontSize,
                     onChanged: (value) {
-                      setState(() => fontSize = value);
+                      setState(() {
+                        fontSize = value;
+                        context.read<ThemeCubit>().changeFontSize(fontSize);
+                      });
                     },
                   ),
                   const Divider(height: 1, indent: 16),
                   WallpaperSetting(
                     selectedWallpaper: chatWallpaper,
                     onChanged: (value) {
-                      setState(() => chatWallpaper = value);
+                      setState(() {
+                        chatWallpaper = value;
+                        context.read<ThemeCubit>().changeColor(chatWallpaper);
+                      });
                     },
                   ),
                 ],
@@ -185,15 +215,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // const SizedBox(height: 10),
 
             // Khác
-            _buildSectionTitle('Khác'),
+            _buildSectionTitle(AppLocalizations.of(context)!.other_section),
             Container(
-              color: Colors.white,
+              color: colorScheme.surface,
               child: Column(
                 children: [
                   SimpleSettingTile(
                     icon: Icons.storage_outlined,
-                    title: 'Quản lý bộ nhớ',
-                    subtitle: 'Xem và giải phóng dung lượng',
+                    title:
+                        AppLocalizations.of(context)!.storage_management_menu,
+                    subtitle:
+                        AppLocalizations.of(
+                          context,
+                        )!.storage_management_subtitle,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -213,8 +247,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // const Divider(height: 1, indent: 16),
                   SimpleSettingTile(
                     icon: Icons.security_outlined,
-                    title: 'Bảo mật',
-                    subtitle: 'Mật khẩu',
+                    title: AppLocalizations.of(context)!.security_menu,
+                    subtitle: AppLocalizations.of(context)!.security_subtitle,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -227,8 +261,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1, indent: 16),
                   SimpleSettingTile(
                     icon: Icons.help_outline,
-                    title: 'Trợ giúp',
-                    subtitle: 'Câu hỏi thường gặp, liên hệ hỗ trợ',
+                    title: AppLocalizations.of(context)!.help_menu,
+                    subtitle: AppLocalizations.of(context)!.help_subtitle,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -257,15 +291,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      color: colorScheme.background,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 13,
+        style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w600,
-          color: Colors.grey[600],
-          letterSpacing: 0.5,
+          color: colorScheme.onSurface.withOpacity(0.5),
+          letterSpacing: 1.0,
         ),
       ),
     );

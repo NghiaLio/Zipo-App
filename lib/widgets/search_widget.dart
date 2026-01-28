@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/utils/validation_utils.dart';
 import 'package:maintain_chat_app/widgets/TopSnackBar.dart';
@@ -70,7 +71,10 @@ class _SearchWidgetState extends State<SearchWidget> {
         });
 
         widget.onSearchStateChanged?.call(false);
-        showSnackBar.show_error('Loading error', context);
+        showSnackBar.show_error(
+          AppLocalizations.of(context)!.loading_error,
+          context,
+        );
       }
     }
 

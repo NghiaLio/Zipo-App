@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
@@ -73,8 +74,10 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
         if (mounted) {
           widget.onCancel();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cần quyền truy cập microphone để ghi âm'),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.mic_permission_needed,
+              ),
             ),
           );
         }
@@ -83,8 +86,10 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
         if (mounted) {
           widget.onCancel();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Vui lòng cấp quyền microphone trong Settings'),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.mic_permission_settings,
+              ),
             ),
           );
         }
@@ -131,9 +136,13 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
       debugPrint('Error starting recording: $e');
       if (mounted) {
         widget.onCancel();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi khi bắt đầu ghi âm: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.start_recording_error}: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -153,17 +162,23 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
         });
       } else if (mounted) {
         widget.onCancel();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Lỗi khi dừng ghi âm')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.stop_recording_error),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Error stopping recording: $e');
       if (mounted) {
         widget.onCancel();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi khi dừng ghi âm: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.stop_recording_error}: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -195,25 +210,31 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, -2),
+            color: theme.shadowColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
       child: SafeArea(
-        child: _isRecording ? _buildRecordingUI() : _buildPreviewUI(),
+        child:
+            _isRecording
+                ? _buildRecordingUI(theme, colorScheme)
+                : _buildPreviewUI(theme, colorScheme),
       ),
     );
   }
 
-  Widget _buildRecordingUI() {
+  Widget _buildRecordingUI(ThemeData theme, ColorScheme colorScheme) {
     return Row(
       children: [
         // Mic button (đang ghi - màu đỏ)
@@ -222,11 +243,22 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
           child: Container(
             width: 60,
             height: 60,
-            decoration: const BoxDecoration(
-              color: Colors.red,
+            decoration: BoxDecoration(
+              color: colorScheme.error,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.error.withOpacity(0.3),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-            child: const Icon(Icons.mic, color: Colors.white, size: 30),
+            child: const Icon(
+              Icons.stop_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -236,17 +268,19 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Đang ghi âm...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                AppLocalizations.of(context)!.recording_status,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 _formatDuration(_recordDuration),
-                style: const TextStyle(
-                  fontSize: 24,
+                style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.red,
+                  color: colorScheme.error,
                 ),
               ),
             ],
@@ -256,7 +290,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
     );
   }
 
-  Widget _buildPreviewUI() {
+  Widget _buildPreviewUI(ThemeData theme, ColorScheme colorScheme) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -265,8 +299,11 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
           children: [
             IconButton(
               icon: Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.blueAccent,
+                _isPlaying
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_filled_rounded,
+                color: colorScheme.primary,
+                size: 40,
               ),
               onPressed: _togglePlayPause,
             ),
@@ -274,13 +311,25 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Slider(
-                    value: _playDuration.inSeconds.toDouble(),
-                    max: _totalDuration.inSeconds.toDouble(),
-                    onChanged: (value) async {
-                      final position = Duration(seconds: value.toInt());
-                      await _audioPlayer.seek(position);
-                    },
+                  SliderTheme(
+                    data: theme.sliderTheme.copyWith(
+                      activeTrackColor: colorScheme.primary,
+                      inactiveTrackColor: colorScheme.primary.withOpacity(0.1),
+                      thumbColor: colorScheme.primary,
+                      overlayColor: colorScheme.primary.withOpacity(0.1),
+                      trackHeight: 4,
+                    ),
+                    child: Slider(
+                      value: _playDuration.inSeconds.toDouble(),
+                      max:
+                          _totalDuration.inSeconds.toDouble() > 0
+                              ? _totalDuration.inSeconds.toDouble()
+                              : 1,
+                      onChanged: (value) async {
+                        final position = Duration(seconds: value.toInt());
+                        await _audioPlayer.seek(position);
+                      },
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -289,11 +338,15 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
                       children: [
                         Text(
                           _formatDuration(_playDuration),
-                          style: const TextStyle(fontSize: 12),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.disabledColor,
+                          ),
                         ),
                         Text(
                           _formatDuration(_totalDuration),
-                          style: const TextStyle(fontSize: 12),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.disabledColor,
+                          ),
                         ),
                       ],
                     ),
@@ -303,7 +356,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         // Nút Hủy và Gửi
         Row(
           children: [
@@ -313,11 +366,15 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
                   _audioPlayer.stop();
                   widget.onCancel();
                 },
-                icon: const Icon(Icons.close, color: Colors.red),
-                label: const Text('Hủy', style: TextStyle(color: Colors.red)),
+                icon: Icon(Icons.close_rounded, color: colorScheme.error),
+                label: Text(AppLocalizations.of(context)!.cancel_action),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error),
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -330,11 +387,16 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
                     widget.onSend(_audioPath!);
                   }
                 },
-                icon: const Icon(Icons.send, color: Colors.white),
-                label: const Text('Gửi'),
+                icon: const Icon(Icons.send_rounded, color: Colors.white),
+                label: Text(AppLocalizations.of(context)!.save_button),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),

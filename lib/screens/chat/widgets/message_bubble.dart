@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:maintain_chat_app/bloc/messages/messageBloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 import '../../../widgets/media_viewer_page.dart';
@@ -28,19 +29,28 @@ class MessageBubble extends StatelessWidget {
   });
 
   Widget _buildStatusRow(
+    BuildContext context,
     bool isMe,
     bool isRead,
     DateTime timestamp, {
     Color? color,
   }) {
-    final textColor = color ?? (isMe ? Colors.white70 : Colors.grey);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textColor =
+        color ??
+        (isMe ? const Color.fromARGB(179, 248, 248, 248) : theme.disabledColor);
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Text(
           DateFormat('HH:mm').format(timestamp),
-          style: TextStyle(fontSize: 10, color: textColor),
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 10,
+            color: textColor,
+          ),
         ),
         if (isMe) ...[
           const SizedBox(width: 4),
@@ -49,7 +59,7 @@ class MessageBubble extends StatelessWidget {
             size: 14,
             color:
                 isRead
-                    ? (color == null ? Colors.white : Colors.blueAccent)
+                    ? (color == null ? Colors.white : colorScheme.primary)
                     : textColor,
           ),
         ],
@@ -59,7 +69,10 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isMe = message.senderID == currentUserId;
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Row(
@@ -77,8 +90,8 @@ class MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     isMe && message.type == MessageType.Text
-                        ? Colors.blueAccent
-                        : Colors.white,
+                        ? colorScheme.primary
+                        : theme.disabledColor.withOpacity(0.5),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -88,11 +101,17 @@ class MessageBubble extends StatelessWidget {
                 boxShadow: [
                   if (message.type == MessageType.Text)
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: theme.shadowColor.withOpacity(0.05),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
                 ],
+                border:
+                    !isMe
+                        ? Border.all(
+                          color: theme.dividerColor.withOpacity(0.05),
+                        )
+                        : null,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -107,9 +126,10 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildReplyButton(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: theme.disabledColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Material(
@@ -119,7 +139,11 @@ class MessageBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.reply_rounded, size: 18, color: Colors.grey[700]),
+            child: Icon(
+              Icons.reply_rounded,
+              size: 18,
+              color: theme.disabledColor,
+            ),
           ),
         ),
       ),
@@ -127,6 +151,8 @@ class MessageBubble extends StatelessWidget {
   }
 
   void _showOptionsBottomSheet(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isMe = message.senderID == currentUserId;
     if (!isMe) return; // Chỉ hiện options (xóa) cho tin nhắn của chính mình
 
@@ -135,9 +161,9 @@ class MessageBubble extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -151,19 +177,19 @@ class MessageBubble extends StatelessWidget {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: theme.disabledColor.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.delete_outline_rounded,
-                      color: Colors.red,
+                      color: colorScheme.error,
                     ),
-                    title: const Text(
-                      'Xóa tin nhắn',
-                      style: TextStyle(color: Colors.red),
+                    title: Text(
+                      AppLocalizations.of(context)!.delete_message_action,
+                      style: TextStyle(color: colorScheme.error),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -179,6 +205,8 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isMe = message.senderID == currentUserId;
     final timestamp = message.sendAt.toDate();
 
@@ -190,16 +218,16 @@ class MessageBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (message.replyingTo != null)
-                _buildReplyPreview(message.replyingTo!, isMe),
+                _buildReplyPreview(context, message.replyingTo!, isMe),
               Text(
                 message.content,
-                style: TextStyle(
-                  color: isMe ? Colors.white : Colors.black87,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: isMe ? Colors.white : colorScheme.onSurface,
                   fontSize: 16,
                 ),
               ),
               const SizedBox(height: 4),
-              _buildStatusRow(isMe, message.isSeen, timestamp),
+              _buildStatusRow(context, isMe, message.isSeen, timestamp),
             ],
           ),
         );
@@ -215,7 +243,7 @@ class MessageBubble extends StatelessWidget {
             if (message.replyingTo != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: _buildReplyPreview(message.replyingTo!, false),
+                child: _buildReplyPreview(context, message.replyingTo!, false),
               ),
             ImageMessageWidget(
               imageUrl: imageUrl,
@@ -223,7 +251,8 @@ class MessageBubble extends StatelessWidget {
                 final currentUser = context.read<UserBloc>().state.userApp;
                 final authorName =
                     isMe
-                        ? (currentUser?.userName ?? 'Tôi')
+                        ? (currentUser?.userName ??
+                            AppLocalizations.of(context)!.me_label_chat)
                         : recipientUser.userName;
                 final authorAvatar =
                     isMe
@@ -246,10 +275,11 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
               child: _buildStatusRow(
+                context,
                 isMe,
                 message.isSeen,
                 timestamp,
-                color: Colors.grey,
+                color: theme.disabledColor,
               ),
             ),
           ],
@@ -266,7 +296,7 @@ class MessageBubble extends StatelessWidget {
             if (message.replyingTo != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: _buildReplyPreview(message.replyingTo!, false),
+                child: _buildReplyPreview(context, message.replyingTo!, false),
               ),
             VideoMessageWidget(
               videoUrl: videoUrl,
@@ -274,7 +304,8 @@ class MessageBubble extends StatelessWidget {
                 final currentUser = context.read<UserBloc>().state.userApp;
                 final authorName =
                     isMe
-                        ? (currentUser?.userName ?? 'Tôi')
+                        ? (currentUser?.userName ??
+                            AppLocalizations.of(context)!.me_label_chat)
                         : recipientUser.userName;
                 final authorAvatar =
                     isMe
@@ -297,10 +328,11 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
               child: _buildStatusRow(
+                context,
                 isMe,
                 message.isSeen,
                 timestamp,
-                color: Colors.grey,
+                color: theme.disabledColor,
               ),
             ),
           ],
@@ -313,7 +345,7 @@ class MessageBubble extends StatelessWidget {
             if (message.replyingTo != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: _buildReplyPreview(message.replyingTo!, false),
+                child: _buildReplyPreview(context, message.replyingTo!, false),
               ),
             AudioMessageWidget(
               audioUrl: message.content
@@ -325,10 +357,11 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 8, 4),
               child: _buildStatusRow(
+                context,
                 isMe,
                 message.isSeen,
                 timestamp,
-                color: Colors.grey,
+                color: theme.disabledColor,
               ),
             ),
           ],
@@ -336,16 +369,26 @@ class MessageBubble extends StatelessWidget {
     }
   }
 
-  Widget _buildReplyPreview(Map<String, String> replyingTo, bool isMe) {
+  Widget _buildReplyPreview(
+    BuildContext context,
+    Map<String, String> replyingTo,
+    bool isMe,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isMe ? Colors.white.withOpacity(0.2) : Colors.grey[100],
+        color:
+            isMe
+                ? Colors.white.withOpacity(0.15)
+                : colorScheme.onSurface.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(
-            color: isMe ? Colors.white70 : Colors.blueAccent,
+            color: isMe ? Colors.white70 : colorScheme.primary,
             width: 3,
           ),
         ),
@@ -355,10 +398,10 @@ class MessageBubble extends StatelessWidget {
         children: [
           Text(
             replyingTo['authorMessage'] ?? '',
-            style: TextStyle(
+            style: theme.textTheme.labelSmall?.copyWith(
               fontWeight: FontWeight.bold,
               fontSize: 11,
-              color: isMe ? Colors.white : Colors.blueAccent,
+              color: isMe ? Colors.white : colorScheme.primary,
             ),
           ),
           const SizedBox(height: 2),
@@ -366,9 +409,12 @@ class MessageBubble extends StatelessWidget {
             replyingTo['content'] ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 13,
-              color: isMe ? Colors.white70 : Colors.black54,
+              color:
+                  isMe
+                      ? Colors.white70
+                      : colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ],
@@ -377,41 +423,70 @@ class MessageBubble extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context, String chatId, message) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Xác nhận xóa tin nhắn',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context)!.delete_message_confirm_title,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
-              const Text('Bạn có chắc chắn muốn xóa tin nhắn này không?'),
+              Text(
+                AppLocalizations.of(context)!.delete_message_confirm_message,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Hủy'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<MessageBloc>().add(
-                        UndoMessageEvent(chatId, message),
-                      );
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        AppLocalizations.of(context)!.cancel_action,
+                        style: TextStyle(color: theme.disabledColor),
+                      ),
                     ),
-                    child: const Text(
-                      'Xóa',
-                      style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.read<MessageBloc>().add(
+                          UndoMessageEvent(chatId, message),
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.error,
+                        foregroundColor: colorScheme.onError,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(AppLocalizations.of(context)!.delete_button),
                     ),
                   ),
                 ],

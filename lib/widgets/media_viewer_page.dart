@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
@@ -86,7 +87,7 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
           status = await Permission.photos.request();
           if (!status.isGranted) {
             showSnackBar.show_error(
-              'Quyền truy cập bộ nhớ bị từ chối',
+              AppLocalizations.of(context)!.storage_permission_denied,
               context,
             );
             setState(() => _isDownloading = false);
@@ -104,9 +105,15 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
 
       // In real scenario, you might want to move this to a more permanent gallery location
       // Using gallery_saver or similar. For now, we save to temp and notify.
-      showSnackBar.show_success('Đã tải xuống: $fileName', context);
+      showSnackBar.show_success(
+        AppLocalizations.of(context)!.download_success_message(fileName),
+        context,
+      );
     } catch (e) {
-      showSnackBar.show_error('Lỗi khi tải xuống: $e', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.download_error_message(e.toString()),
+        context,
+      );
     } finally {
       setState(() {
         _isDownloading = false;
@@ -116,6 +123,9 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -136,13 +146,14 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                         child: CachedNetworkImage(
                           imageUrl: widget.url,
                           placeholder:
-                              (context, url) => const CircularProgressIndicator(
-                                color: Colors.white,
+                              (context, url) => CircularProgressIndicator(
+                                color: colorScheme.primary,
+                                strokeWidth: 2,
                               ),
                           errorWidget:
                               (context, url, error) => const Icon(
                                 Icons.broken_image,
-                                color: Colors.white,
+                                color: Colors.white54,
                                 size: 50,
                               ),
                           fit: BoxFit.contain,
@@ -158,9 +169,9 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                             size: 60,
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Không thể tải video',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.could_not_load_video,
+                            style: theme.textTheme.bodyLarge?.copyWith(
                               color: Colors.white70,
                               fontSize: 16,
                             ),
@@ -174,14 +185,22 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                               _initializeVideo();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white24,
+                              backgroundColor: colorScheme.primary.withOpacity(
+                                0.3,
+                              ),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
+                              side: BorderSide(
+                                color: colorScheme.primary,
+                                width: 1,
+                              ),
                             ),
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Thử lại'),
+                            label: Text(
+                              AppLocalizations.of(context)!.retry_button,
+                            ),
                           ),
                         ],
                       )
@@ -191,7 +210,10 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                         aspectRatio: _videoController!.value.aspectRatio,
                         child: VideoPlayer(_videoController!),
                       )
-                      : const CircularProgressIndicator(color: Colors.white),
+                      : CircularProgressIndicator(
+                        color: colorScheme.primary,
+                        strokeWidth: 2,
+                      ),
             ),
           ),
 
@@ -212,7 +234,7 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    colors: [Colors.black.withOpacity(0.8), Colors.transparent],
                   ),
                 ),
                 child: Row(
@@ -224,6 +246,7 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                     const SizedBox(width: 8),
                     CircleAvatar(
                       radius: 20,
+                      backgroundColor: Colors.white10,
                       backgroundImage: CachedNetworkImageProvider(
                         widget.userAvatar,
                       ),
@@ -241,9 +264,9 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text(
-                            'Vừa xong',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.just_now_label,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),
@@ -254,12 +277,12 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                     IconButton(
                       icon:
                           _isDownloading
-                              ? const SizedBox(
+                              ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: colorScheme.primary,
                                 ),
                               )
                               : const Icon(Icons.download, color: Colors.white),
@@ -288,7 +311,7 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    colors: [Colors.black.withOpacity(0.8), Colors.transparent],
                   ),
                 ),
                 child: Column(
@@ -297,8 +320,8 @@ class _MediaViewerPageState extends State<MediaViewerPage> {
                     VideoProgressIndicator(
                       _videoController!,
                       allowScrubbing: true,
-                      colors: const VideoProgressColors(
-                        playedColor: Color(0xFF0288D1),
+                      colors: VideoProgressColors(
+                        playedColor: colorScheme.primary,
                         bufferedColor: Colors.white24,
                         backgroundColor: Colors.white10,
                       ),

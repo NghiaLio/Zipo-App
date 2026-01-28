@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -48,7 +49,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   String? _editingMediaType;
   final Map<String, TextEditingController> _editControllers = {};
   final Map<String, FocusNode> _editFocusNodes = {};
-  final FileService _fileService = FileService();
   final ImagePicker _imagePicker = ImagePicker();
   VideoPlayerController? _videoPreviewController;
   VideoPlayerController? _editVideoPreviewController;
@@ -78,7 +78,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   void commentPost() async {
     final content = _commentController.text.trim();
     if (content.isEmpty && _selectedMediaFile == null) {
-      showSnackBar.show_error('Bạn không thể gửi bình luận trống', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.empty_comment_error,
+        context,
+      );
       return;
     }
     final currentUser = context.read<UserBloc>().state.userApp;
@@ -103,7 +106,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         );
       } catch (e) {
         showSnackBar.show_error(
-          'Tải lên media thất bại. Vui lòng thử lại.',
+          AppLocalizations.of(context)!.upload_media_failed,
           context,
         );
         return;
@@ -155,14 +158,17 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   void _showMediaPicker({bool isEditing = false}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -176,25 +182,32 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: theme.disabledColor.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(height: 16),
                   ListTile(
-                    leading: const Icon(Icons.image, color: Color(0xFF0288D1)),
-                    title: const Text('Chọn ảnh'),
+                    leading: Icon(Icons.image, color: colorScheme.primary),
+                    title: Text(
+                      AppLocalizations.of(context)!.select_image,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                       _pickImage(isEditing: isEditing);
                     },
                   ),
                   ListTile(
-                    leading: const Icon(
-                      Icons.videocam,
-                      color: Color(0xFF0288D1),
+                    leading: Icon(Icons.videocam, color: colorScheme.primary),
+                    title: Text(
+                      AppLocalizations.of(context)!.select_video,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
                     ),
-                    title: const Text('Chọn video'),
                     onTap: () {
                       Navigator.pop(context);
                       _pickVideo(isEditing: isEditing);
@@ -226,7 +239,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         });
       }
     } catch (e) {
-      showSnackBar.show_error('Không thể chọn ảnh. Vui lòng thử lại.', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.select_media_error,
+        context,
+      );
     }
   }
 
@@ -261,7 +277,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       }
     } catch (e) {
       showSnackBar.show_error(
-        'Không thể chọn video. Vui lòng thử lại.',
+        AppLocalizations.of(context)!.select_media_error,
         context,
       );
     }
@@ -331,7 +347,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         );
       } catch (e) {
         showSnackBar.show_error(
-          'Tải lên media thất bại. Vui lòng thử lại.',
+          AppLocalizations.of(context)!.upload_media_failed,
           context,
         );
         return;
@@ -354,7 +370,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       }
       _cancelEditComment();
     } else {
-      showSnackBar.show_error('Bình luận không thể để trống', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.empty_comment_error,
+        context,
+      );
     }
   }
 
@@ -370,18 +389,22 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   void _deleteComment(Comment comment) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
       builder:
           (context) => Dialog(
+            backgroundColor: colorScheme.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -390,24 +413,29 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: colorScheme.error.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.delete_outline,
-                      color: Colors.red,
+                      color: colorScheme.error,
                       size: 48,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Xóa bình luận',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.delete_comment_action,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Bạn có chắc chắn muốn xóa bình luận này?',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    AppLocalizations.of(context)!.delete_comment_confirm,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.7),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -420,14 +448,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: colorScheme.onSurface.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               'Hủy',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[700],
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.disabledColor,
                                 fontWeight: FontWeight.w600,
                               ),
                               textAlign: TextAlign.center,
@@ -448,14 +475,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: colorScheme.error,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Xóa',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onError,
                                 fontWeight: FontWeight.w600,
                               ),
                               textAlign: TextAlign.center,
@@ -473,14 +499,17 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   void _showCommentOptions(Comment comment) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder:
           (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -494,7 +523,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: theme.disabledColor.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -510,12 +539,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         vertical: 16,
                         horizontal: 20,
                       ),
-                      color: Colors.blue.withOpacity(0.1),
-                      child: const Text(
-                        'Sửa bình luận',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF0288D1),
+                      color: colorScheme.primary.withOpacity(0.1),
+                      child: Text(
+                        AppLocalizations.of(context)!.edit_comment_action,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                         textAlign: TextAlign.center,
@@ -534,12 +562,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         vertical: 16,
                         horizontal: 20,
                       ),
-                      color: Colors.red.withOpacity(0.1),
-                      child: const Text(
-                        'Xóa bình luận',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.red,
+                      color: colorScheme.error.withOpacity(0.1),
+                      child: Text(
+                        AppLocalizations.of(context)!.delete_comment_action,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.error,
                           fontWeight: FontWeight.w500,
                         ),
                         textAlign: TextAlign.center,
@@ -555,12 +582,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         vertical: 16,
                         horizontal: 20,
                       ),
-                      color: Colors.grey.withOpacity(0.1),
+                      color: colorScheme.onSurface.withOpacity(0.05),
                       child: Text(
-                        'Hủy',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[700],
+                        AppLocalizations.of(context)!.cancel_action,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.disabledColor,
                           fontWeight: FontWeight.w500,
                         ),
                         textAlign: TextAlign.center,
@@ -583,9 +609,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       ),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
@@ -605,8 +631,17 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             }
           },
           builder: (context, state) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+
             if (state.isLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Column(
+                children: [
+                  _buildHeader(state),
+                  Expanded(child: _buildLoadingSkeleton()),
+                  _buildInputArea(),
+                ],
+              );
             }
             final _comments = state.commentsOnPost;
             return isFailLoading
@@ -617,8 +652,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
+                        color: colorScheme.surface,
                         border: Border(
-                          bottom: BorderSide(color: Colors.grey[200]!),
+                          bottom: BorderSide(
+                            color: theme.dividerColor.withOpacity(0.1),
+                          ),
                         ),
                       ),
                       child: Column(
@@ -627,7 +665,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             width: 40,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: Colors.grey[300],
+                              color: theme.disabledColor.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -636,14 +674,19 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Bình luận (${state.totalCommentOnPost})',
-                                style: const TextStyle(
-                                  fontSize: 18,
+                                AppLocalizations.of(
+                                  context,
+                                )!.comments_count(state.totalCommentOnPost),
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.close),
+                                icon: Icon(
+                                  Icons.close,
+                                  color: colorScheme.onSurface,
+                                ),
                                 onPressed: () => Navigator.pop(context),
                               ),
                             ],
@@ -662,10 +705,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                               child: SizedBox(
                                 height:
                                     MediaQuery.of(context).size.height * 0.5,
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    'Chưa có bình luận nào. Hãy là người đầu tiên bình luận!',
-                                    style: TextStyle(fontSize: 16),
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.no_comments_message,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.disabledColor,
+                                    ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -689,9 +736,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     // Input area
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         border: Border(
-                          top: BorderSide(color: Colors.grey[200]!),
+                          top: BorderSide(
+                            color: theme.dividerColor.withOpacity(0.1),
+                          ),
                         ),
                       ),
                       child: SafeArea(
@@ -704,20 +753,29 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   horizontal: 16,
                                   vertical: 8,
                                 ),
-                                color: Colors.grey[100],
+                                color: colorScheme.onSurface.withOpacity(0.05),
                                 child: Row(
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        'Đang phản hồi $_replyingToName',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[700],
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.replying_to_comment(
+                                          _replyingToName!,
                                         ),
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: colorScheme.onSurface
+                                                  .withOpacity(0.7),
+                                            ),
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.close, size: 18),
+                                      icon: Icon(
+                                        Icons.close,
+                                        size: 18,
+                                        color: theme.disabledColor,
+                                      ),
                                       onPressed: _cancelReply,
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
@@ -770,9 +828,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                                                 .value
                                                                 .isPlaying
                                                             ? Icons
-                                                                .pause_circle_filled
+                                                                .pause_circle_filled_rounded
                                                             : Icons
-                                                                .play_circle_filled,
+                                                                .play_circle_filled_rounded,
                                                         size: 56,
                                                         color: Colors.white,
                                                       ),
@@ -794,10 +852,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                               : Container(
                                                 width: 200,
                                                 height: 150,
-                                                color: Colors.grey[300],
-                                                child: const Center(
+                                                color: colorScheme.onSurface
+                                                    .withOpacity(0.05),
+                                                child: Center(
                                                   child:
-                                                      CircularProgressIndicator(),
+                                                      CircularProgressIndicator(
+                                                        color:
+                                                            colorScheme.primary,
+                                                      ),
                                                 ),
                                               ),
                                     ),
@@ -808,8 +870,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                         onTap: _removeMedia,
                                         child: Container(
                                           padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black54,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(
+                                              0.6,
+                                            ),
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
@@ -829,13 +893,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[200],
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.05,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: IconButton(
                                       icon: Icon(
                                         Icons.add_photo_alternate_outlined,
-                                        color: Colors.grey[700],
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.7),
                                       ),
                                       onPressed: _showMediaPicker,
                                     ),
@@ -844,23 +911,32 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   Expanded(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[100],
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.05),
                                         borderRadius: BorderRadius.circular(24),
                                       ),
                                       child: TextField(
                                         controller: _commentController,
                                         focusNode: _focusNode,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: colorScheme.onSurface,
+                                            ),
                                         decoration: InputDecoration(
-                                          hintText: 'Viết bình luận...',
+                                          hintText:
+                                              AppLocalizations.of(
+                                                context,
+                                              )!.comment_hint,
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
                                                 horizontal: 16,
                                                 vertical: 10,
                                               ),
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey[500],
-                                          ),
+                                          hintStyle: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                                color: theme.disabledColor,
+                                              ),
                                         ),
                                         maxLines: null,
                                       ),
@@ -872,8 +948,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       Icons.send,
                                       color:
                                           _commentController.text.isEmpty
-                                              ? Colors.grey
-                                              : const Color(0xFF0288D1),
+                                              ? theme.disabledColor
+                                              : colorScheme.primary,
                                     ),
                                     onPressed: commentPost,
                                   ),
@@ -893,6 +969,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   Widget _buildCommentCard(Comment comment, int level) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     // Tối đa thụt vào 2 lần
     final indent = level > 2 ? 2 : level;
     final leftPadding = 16.0 + (indent * 40.0);
@@ -928,9 +1007,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         children: [
                           Text(
                             comment.userName,
-                            style: const TextStyle(
+                            style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize:
+                                  (theme.textTheme.titleMedium?.fontSize ??
+                                      14) -
+                                  1,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           if (isAuthor) ...[
@@ -941,15 +1024,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0288D1),
+                                color: colorScheme.primary,
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Tác giả',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 9,
+                                  color: colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -1000,10 +1083,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                                 : Container(
                                                   width: 200,
                                                   height: 150,
-                                                  color: Colors.grey[300],
-                                                  child: const Center(
+                                                  color: colorScheme.onSurface
+                                                      .withOpacity(0.05),
+                                                  child: Center(
                                                     child:
-                                                        CircularProgressIndicator(),
+                                                        CircularProgressIndicator(
+                                                          color:
+                                                              colorScheme
+                                                                  .primary,
+                                                        ),
                                                   ),
                                                 ))
                                             : (_editingMediaType == 'image'
@@ -1045,8 +1133,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                           () => _removeMedia(isEditing: true),
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black54,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.6),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -1063,10 +1151,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                     width: 150,
                                     height: 100,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[100],
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.03,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.grey[300]!,
+                                        color: theme.dividerColor.withOpacity(
+                                          0.1,
+                                        ),
                                       ),
                                     ),
                                     child: Column(
@@ -1075,16 +1167,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       children: [
                                         Icon(
                                           Icons.add_photo_alternate_outlined,
-                                          color: Colors.grey[400],
+                                          color: theme.disabledColor,
                                           size: 32,
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           'Thêm ảnh/video',
-                                          style: TextStyle(
-                                            color: Colors.grey[500],
-                                            fontSize: 12,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: theme.disabledColor,
+                                              ),
                                         ),
                                       ],
                                     ),
@@ -1097,22 +1189,27 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         Container(
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFF0288D1),
+                              color: colorScheme.primary,
                               width: 2,
                             ),
                           ),
                           child: TextField(
                             controller: _editControllers[comment.id],
                             focusNode: _editFocusNodes[comment.id],
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: 'Nội dung bình luận ...',
-                              contentPadding: EdgeInsets.all(2),
+                              hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.disabledColor,
+                              ),
+                              contentPadding: const EdgeInsets.all(8),
                             ),
-                            style: const TextStyle(fontSize: 14),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
                             maxLines: null,
                           ),
                         ),
@@ -1129,14 +1226,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.withOpacity(0.1),
+                                  color: colorScheme.onSurface.withOpacity(
+                                    0.05,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'H\u1ee7y',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[700],
+                                  'Hủy',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.disabledColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -1152,14 +1250,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   vertical: 8,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0288D1),
+                                  color: colorScheme.primary,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'L\u01b0u',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white,
+                                child: Text(
+                                  'Lưu',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onPrimary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -1172,12 +1269,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.grey[100],
+                            color: colorScheme.onSurface.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             comment.content,
-                            style: const TextStyle(fontSize: 14),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ],
@@ -1213,18 +1312,27 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   (context, url) => Container(
                                     width: 200,
                                     height: 150,
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.05,
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        color: colorScheme.primary,
+                                      ),
                                     ),
                                   ),
                               errorWidget:
                                   (context, url, error) => Container(
                                     width: 200,
                                     height: 150,
-                                    color: Colors.grey[300],
-                                    child: const Center(
-                                      child: Icon(Icons.broken_image),
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.05,
+                                    ),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: theme.disabledColor,
+                                      ),
                                     ),
                                   ),
                             ),
@@ -1264,9 +1372,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         children: [
                           Text(
                             comment.timeAgo,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.disabledColor,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -1277,11 +1384,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   comment.userName,
                                 ),
                             child: Text(
-                              'Phản hồi',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w600,
+                              AppLocalizations.of(context)!.reply_action,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -1303,18 +1409,203 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     );
   }
 
+  Widget _buildLoadingSkeleton() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: 6,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return _buildCommentSkeleton(index % 2 == 1);
+      },
+    );
+  }
+
+  Widget _buildCommentSkeleton(bool isReply) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final leftPadding = 16.0 + (isReply ? 40.0 : 0.0);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: leftPadding,
+        right: 16,
+        top: 12,
+        bottom: 12,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: isReply ? 32 : 36,
+            height: isReply ? 32 : 36,
+            decoration: BoxDecoration(
+              color: colorScheme.onSurface.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 100,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurface.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      width: 60,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurface.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(PostState state) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.disabledColor.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(
+                  context,
+                )!.comments_count(state.totalCommentOnPost.toString()),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, color: colorScheme.onSurface),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  onPressed: null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: Icon(Icons.send, color: theme.disabledColor),
+                onPressed: null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFailureWidget() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 8),
-          const Text(
-            'Không thể tải bình luận.',
-            style: TextStyle(fontSize: 16),
+          Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+          const SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context)!.fail_loading_comments,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurface,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               setState(() {
@@ -1323,7 +1614,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               // Trigger reload comments
               context.read<PostBloc>().add(LoadCommentForPost(widget.postId));
             },
-            child: const Text('Thử lại'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(AppLocalizations.of(context)!.cancel_action),
           ),
         ],
       ),

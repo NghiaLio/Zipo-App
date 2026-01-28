@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
 
 class EmptyPlaceholder extends StatelessWidget {
@@ -9,7 +10,7 @@ class EmptyPlaceholder extends StatelessWidget {
 
   const EmptyPlaceholder({
     super.key,
-    this.message = 'Không có dữ liệu',
+    this.message,
     this.icon = Icons.inbox,
     this.actionText,
     this.onAction,
@@ -17,6 +18,9 @@ class EmptyPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -27,20 +31,26 @@ class EmptyPlaceholder extends StatelessWidget {
             Icon(
               icon,
               size: ResponsiveHelper.getResponsiveSize(context, 64),
-              color: Colors.grey[400],
+              color: theme.disabledColor,
             ),
             SizedBox(height: ResponsiveHelper.getResponsiveSize(context, 16)),
             Text(
-              message!,
-              style: TextStyle(
+              message ?? AppLocalizations.of(context)!.no_data_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontSize: ResponsiveHelper.getFontSize(context, 16),
-                color: Colors.grey[600],
+                color: colorScheme.onSurface.withOpacity(0.6),
               ),
               textAlign: TextAlign.center,
             ),
             if (actionText != null && onAction != null) ...[
               SizedBox(height: ResponsiveHelper.getResponsiveSize(context, 16)),
-              TextButton(onPressed: onAction, child: Text(actionText!)),
+              TextButton(
+                onPressed: onAction,
+                child: Text(
+                  actionText!,
+                  style: TextStyle(color: colorScheme.primary),
+                ),
+              ),
             ],
           ],
         ),

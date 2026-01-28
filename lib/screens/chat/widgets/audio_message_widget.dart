@@ -81,32 +81,38 @@ class _AudioMessageWidgetState extends State<AudioMessageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = widget.isMe ? Colors.white : const Color(0xFF0288D1);
-    final secondaryColor = widget.isMe ? Colors.white54 : Colors.grey[400];
-    final bubbleColor = widget.isMe ? const Color(0xFF0288D1) : Colors.white;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final primaryColor = widget.isMe ? Colors.white : colorScheme.primary;
+    final secondaryColor =
+        widget.isMe ? Colors.white54 : colorScheme.onSurface.withOpacity(0.4);
+    final bubbleColor = widget.isMe ? colorScheme.primary : colorScheme.surface;
 
     if (_hasError) {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: widget.isMe ? Colors.red.shade400 : Colors.white,
+          color:
+              widget.isMe
+                  ? colorScheme.error.withOpacity(0.8)
+                  : colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.shade100),
+          border: Border.all(color: colorScheme.error.withOpacity(0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.error_outline,
-              color: widget.isMe ? Colors.white : Colors.red,
+              color: widget.isMe ? Colors.white : colorScheme.error,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               'Lỗi tải âm thanh',
-              style: TextStyle(
-                color: widget.isMe ? Colors.white : Colors.red,
-                fontSize: 13,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: widget.isMe ? Colors.white : colorScheme.error,
               ),
             ),
           ],
@@ -122,11 +128,15 @@ class _AudioMessageWidgetState extends State<AudioMessageWidget> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: theme.shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
+        border:
+            !widget.isMe
+                ? Border.all(color: theme.dividerColor.withOpacity(0.05))
+                : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -183,7 +193,7 @@ class _AudioMessageWidgetState extends State<AudioMessageWidget> {
                               color:
                                   isPlayed
                                       ? primaryColor
-                                      : secondaryColor!.withOpacity(0.3),
+                                      : secondaryColor.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           );
@@ -192,7 +202,7 @@ class _AudioMessageWidgetState extends State<AudioMessageWidget> {
                     ),
                     // Invisible Slider for seeking
                     SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
+                      data: theme.sliderTheme.copyWith(
                         trackHeight: 30,
                         thumbShape: SliderComponentShape.noThumb,
                         overlayShape: SliderComponentShape.noOverlay,
@@ -232,18 +242,24 @@ class _AudioMessageWidgetState extends State<AudioMessageWidget> {
               children: [
                 Text(
                   _formatDuration(_position),
-                  style: TextStyle(
+                  style: theme.textTheme.labelSmall?.copyWith(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: widget.isMe ? Colors.white70 : Colors.black54,
+                    color:
+                        widget.isMe
+                            ? Colors.white70
+                            : colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
                 Text(
                   _formatDuration(_duration),
-                  style: TextStyle(
+                  style: theme.textTheme.labelSmall?.copyWith(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: widget.isMe ? Colors.white70 : Colors.black54,
+                    color:
+                        widget.isMe
+                            ? Colors.white70
+                            : colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],

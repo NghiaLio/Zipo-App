@@ -58,6 +58,9 @@ dependencies:
   flutter_native_splash: ^2.4.7
   flutter_launcher_icons: ^0.14.4
   dio: ^5.9.0
+  hive: ^2.2.3
+  flutter_localization: ^0.3.3
+  flutter_gen: ^5.9.0
 
 
 dev_dependencies:
@@ -105,7 +108,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  generate: true 
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env

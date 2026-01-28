@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:maintain_chat_app/bloc/post/postBloc.dart';
 import 'package:maintain_chat_app/bloc/post/postEvent.dart';
@@ -91,7 +92,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
       }
     } catch (e) {
       if (mounted) {
-        showSnackBar.show_error('Lỗi khi chọn ảnh', context);
+        showSnackBar.show_error(
+          AppLocalizations.of(context)!.select_image_error,
+          context,
+        );
       }
     }
   }
@@ -121,7 +125,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
       }
     } catch (e) {
       if (mounted) {
-        showSnackBar.show_error('Lỗi khi chọn video', context);
+        showSnackBar.show_error(
+          AppLocalizations.of(context)!.select_video_error,
+          context,
+        );
       }
     }
   }
@@ -138,7 +145,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   void _createPost() async {
     if (_contentController.text.trim().isEmpty) {
-      showSnackBar.show_error('Vui lòng nhập nội dung bài viết', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.enter_post_content_error,
+        context,
+      );
       return;
     }
     try {
@@ -185,7 +195,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
           ),
         );
         Navigator.pop(context, widget.postToEdit);
-        showSnackBar.show_success('Bài viết đã được cập nhật!', context);
+        showSnackBar.show_success(
+          AppLocalizations.of(context)!.post_updated_message,
+          context,
+        );
       } else {
         // Create new post
         // Generate clientId (unique identifier for this post from client)
@@ -212,8 +225,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
     } catch (e) {
       showSnackBar.show_error(
         widget.isEditMode
-            ? 'Lỗi khi cập nhật bài viết'
-            : 'Lỗi khi tạo bài viết',
+            ? AppLocalizations.of(context)!.update_post_error
+            : AppLocalizations.of(context)!.create_post_error,
         context,
       );
       Navigator.pop(context, 404);
@@ -299,44 +312,61 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, userState) {
         final currentUser = userState.userApp;
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           appBar: AppBar(
             elevation: 0,
-            backgroundColor: Colors.white,
+            backgroundColor: colorScheme.surface,
+            surfaceTintColor: colorScheme.surface,
             leading: IconButton(
-              icon: const Icon(Icons.close, color: Colors.black),
+              icon: Icon(Icons.close, color: colorScheme.onSurface),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              widget.isEditMode ? 'Chỉnh sửa bài viết' : 'Tạo bài viết',
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 20,
+              widget.isEditMode
+                  ? AppLocalizations.of(context)!.edit_post_title
+                  : AppLocalizations.of(context)!.create_post_title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: _isPosting ? null : _createPost,
-                child:
-                    _isPosting
-                        ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : Text(
-                          widget.isEditMode ? 'Lưu' : 'Đăng',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: TextButton(
+                  onPressed: _isPosting ? null : _createPost,
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    disabledForegroundColor: theme.disabledColor,
+                  ),
+                  child:
+                      _isPosting
+                          ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.primary,
+                            ),
+                          )
+                          : Text(
+                            widget.isEditMode
+                                ? AppLocalizations.of(context)!.save_action
+                                : AppLocalizations.of(context)!.post_action,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                ),
               ),
             ],
           ),
@@ -350,6 +380,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     children: [
                       CircleAvatar(
                         radius: 24,
+                        backgroundColor: colorScheme.onSurface.withOpacity(0.1),
                         backgroundImage:
                             currentUser?.avatarUrl != null &&
                                     currentUser!.avatarUrl!.isNotEmpty
@@ -360,7 +391,11 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         child:
                             currentUser?.avatarUrl == null ||
                                     currentUser!.avatarUrl!.isEmpty
-                                ? const Icon(Icons.person, size: 28)
+                                ? Icon(
+                                  Icons.person,
+                                  size: 28,
+                                  color: theme.disabledColor,
+                                )
                                 : null,
                       ),
                       const SizedBox(width: 12),
@@ -370,19 +405,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
                           children: [
                             Text(
                               currentUser?.userName ?? 'User',
-                              style: const TextStyle(
+                              style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                color: colorScheme.onSurface,
                               ),
                             ),
+                            const SizedBox(height: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: 10,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(4),
+                                color: colorScheme.onSurface.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -390,15 +426,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
                                   Icon(
                                     Icons.public,
                                     size: 14,
-                                    color: Colors.grey[700],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Công khai',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[700],
+                                    color: colorScheme.onSurface.withOpacity(
+                                      0.6,
                                     ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.public_visibility,
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onSurface
+                                              .withOpacity(0.6),
+                                        ),
                                   ),
                                 ],
                               ),
@@ -417,12 +458,18 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     controller: _contentController,
                     maxLines: null,
                     minLines: 5,
-                    decoration: const InputDecoration(
-                      hintText: 'Bạn đang nghĩ gì?',
-                      hintStyle: TextStyle(fontSize: 18, color: Colors.grey),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.post_hint,
+                      hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                        fontSize: 18,
+                        color: theme.disabledColor,
+                      ),
                       border: InputBorder.none,
                     ),
-                    style: const TextStyle(fontSize: 18),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 18,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
 
@@ -443,8 +490,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
                             onTap: _removeMedia,
                             child: Container(
                               padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.black54,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -467,16 +514,19 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(
+                        color: theme.dividerColor.withOpacity(0.1),
+                      ),
                       borderRadius: BorderRadius.circular(12),
+                      color: colorScheme.onSurface.withOpacity(0.02),
                     ),
                     child: Row(
                       children: [
-                        const Text(
-                          'Thêm vào bài viết',
-                          style: TextStyle(
-                            fontSize: 15,
+                        Text(
+                          AppLocalizations.of(context)!.add_to_post,
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const Spacer(),

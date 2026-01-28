@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userState.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/screens/profiles/profile_detail_page.dart';
 import '../../utils/responsive_helper.dart';
@@ -22,10 +23,20 @@ class FriendsTab extends StatelessWidget {
         }
 
         final currentUser = state.userApp;
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+
         if (currentUser == null ||
             currentUser.friends == null ||
             currentUser.friends!.isEmpty) {
-          return const Center(child: Text('Chưa có bạn bè nào'));
+          return Center(
+            child: Text(
+              AppLocalizations.of(context)!.no_friends_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          );
         }
 
         // Filter friends based on search query
@@ -40,8 +51,11 @@ class FriendsTab extends StatelessWidget {
           return Center(
             child: Text(
               searchQuery.isEmpty
-                  ? 'Chưa có bạn bè nào'
-                  : 'Không tìm thấy kết quả',
+                  ? AppLocalizations.of(context)!.no_friends_message
+                  : AppLocalizations.of(context)!.no_results_message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
           );
         }
@@ -65,27 +79,36 @@ class FriendItem extends StatelessWidget {
   const FriendItem({super.key, required this.friend});
 
   void _showRemoveFriendDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (BuildContext bottomSheetContext) {
-        return Padding(
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Xóa bạn bè',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context)!.remove_friend_title,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Bạn có chắc muốn xóa ${friend.userName} khỏi danh sách bạn bè?',
-                style: const TextStyle(fontSize: 16),
+                AppLocalizations.of(
+                  context,
+                )!.remove_friend_confirm(friend.userName),
+                style: theme.textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -98,22 +121,27 @@ class FriendItem extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Đã xóa ${friend.userName} khỏi danh sách bạn bè',
+                        AppLocalizations.of(
+                          context,
+                        )!.remove_friend_success(friend.userName),
                       ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Xóa',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: Text(
+                  AppLocalizations.of(context)!.delete_action,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onError,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -121,14 +149,19 @@ class FriendItem extends StatelessWidget {
                 onPressed: () => Navigator.pop(bottomSheetContext),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: Colors.grey[400]!),
+                  side: BorderSide(
+                    color: colorScheme.onSurface.withOpacity(0.2),
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Hủy',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel_action,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
                 ),
               ),
               SizedBox(height: MediaQuery.of(context).padding.bottom),
@@ -141,6 +174,9 @@ class FriendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       onTap: () {
@@ -154,26 +190,30 @@ class FriendItem extends StatelessWidget {
       },
       leading: CircleAvatar(
         radius: 26,
-        backgroundColor: Colors.blue.shade100,
+        backgroundColor: colorScheme.primary.withOpacity(0.1),
         backgroundImage:
             friend.avatarUrl?.isNotEmpty == true
                 ? CachedNetworkImageProvider(friend.avatarUrl!)
                 : null,
         child:
-            friend.avatarUrl?.isEmpty == true
-                ? Icon(Icons.person, color: Colors.blue.shade700)
+            friend.avatarUrl == null || friend.avatarUrl!.isEmpty
+                ? Icon(Icons.person, color: colorScheme.primary)
                 : null,
       ),
       title: Text(
         friend.userName,
-        style: TextStyle(
+        style: theme.textTheme.bodyLarge?.copyWith(
           fontSize: ResponsiveHelper.getFontSize(context, 16),
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: colorScheme.onSurface,
         ),
       ),
       trailing: PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert, color: Colors.grey),
+        icon: Icon(
+          Icons.more_vert,
+          color: colorScheme.onSurface.withOpacity(0.4),
+        ),
+        color: colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         onSelected: (value) {
           if (value == 'remove') {
@@ -182,19 +222,19 @@ class FriendItem extends StatelessWidget {
         },
         itemBuilder:
             (BuildContext context) => [
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'remove',
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.person_remove_outlined,
                       color: Colors.redAccent,
                       size: 20,
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Text(
-                      'Xóa bạn bè',
-                      style: TextStyle(color: Colors.redAccent),
+                      AppLocalizations.of(context)!.remove_friend_title,
+                      style: const TextStyle(color: Colors.redAccent),
                     ),
                   ],
                 ),

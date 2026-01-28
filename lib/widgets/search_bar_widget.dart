@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import '../utils/responsive_helper.dart';
 
 class SearchBarWidget extends StatefulWidget {
@@ -28,6 +29,8 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final height = ResponsiveHelper.getResponsiveSize(
       context,
       40,
@@ -36,31 +39,34 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: colorScheme.onSurface.withOpacity(0.08),
         borderRadius: BorderRadius.circular(height / 2),
       ),
       child: TextField(
         controller: _controller,
-        style: TextStyle(fontSize: ResponsiveHelper.getFontSize(context, 15)),
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontSize: ResponsiveHelper.getFontSize(context, 15),
+          color: colorScheme.onSurface,
+        ),
         onChanged: widget.onSearchChanged,
         decoration: InputDecoration(
-          hintText: 'Tìm kiếm',
-          hintStyle: TextStyle(
-            color: Colors.grey[600],
+          hintText: AppLocalizations.of(context)!.search_hint,
+          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.5),
             fontSize: ResponsiveHelper.getFontSize(context, 15),
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: Colors.grey[600],
-            size: ResponsiveHelper.getFontSize(context, 22),
+            color: colorScheme.onSurface.withOpacity(0.5),
+            size: ResponsiveHelper.getFontSize(context, 20),
           ),
           suffixIcon:
               _controller.text.isNotEmpty
                   ? IconButton(
                     icon: Icon(
                       Icons.clear,
-                      color: Colors.grey[600],
-                      size: ResponsiveHelper.getFontSize(context, 20),
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      size: ResponsiveHelper.getFontSize(context, 18),
                     ),
                     onPressed: () {
                       _controller.clear();

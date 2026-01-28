@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/users/userState.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/screens/profiles/profile_detail_page.dart';
@@ -76,8 +77,14 @@ class _FriendInviteListState extends State<FriendInviteList> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: localUsers.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder:
+          (_, __) => Divider(
+            height: 1,
+            color: Theme.of(context).dividerColor.withOpacity(0.1),
+          ),
       itemBuilder: (context, index) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
         final UserApp user = localUsers[index];
         bool invited =
             user.requiredAddFriend?.contains(_auth.currentUser!.uid) ?? false;
@@ -88,7 +95,10 @@ class _FriendInviteListState extends State<FriendInviteList> {
               setState(() {
                 localUsers = List.from(widget.listUsers);
               });
-              showSnackBar.show_error('Gửi lời mời kết bạn thất bại', context);
+              showSnackBar.show_error(
+                AppLocalizations.of(context)!.friend_request_fail,
+                context,
+              );
             }
           },
           child: Padding(
@@ -102,21 +112,29 @@ class _FriendInviteListState extends State<FriendInviteList> {
                     child: Row(
                       children: [
                         CircleAvatar(
+                          backgroundColor: theme.disabledColor.withOpacity(0.1),
                           backgroundImage:
                               user.avatarUrl != null &&
                                       user.avatarUrl!.isNotEmpty
                                   ? NetworkImage(user.avatarUrl!)
-                                  : const AssetImage(
-                                        'assets/images/default-avatar.jpg',
-                                      )
-                                      as ImageProvider,
+                                  : null,
                           radius: 24,
+                          child:
+                              user.avatarUrl == null || user.avatarUrl!.isEmpty
+                                  ? Icon(
+                                    Icons.person,
+                                    color: theme.disabledColor,
+                                  )
+                                  : null,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             user.userName,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -130,8 +148,15 @@ class _FriendInviteListState extends State<FriendInviteList> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: invited ? Colors.grey : Colors.blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor:
+                            invited
+                                ? theme.disabledColor.withOpacity(0.2)
+                                : colorScheme.primary,
+                        foregroundColor:
+                            invited
+                                ? colorScheme.onSurface.withOpacity(0.6)
+                                : colorScheme.onPrimary,
+                        elevation: invited ? 0 : 2,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -145,8 +170,13 @@ class _FriendInviteListState extends State<FriendInviteList> {
                       ),
                       onPressed: () => toggleInvite(user),
                       child: Text(
-                        invited ? 'Thu hồi' : 'Kết bạn',
-                        style: const TextStyle(fontSize: 13),
+                        invited
+                            ? AppLocalizations.of(context)!.revoke_action
+                            : AppLocalizations.of(context)!.add_friend_action,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

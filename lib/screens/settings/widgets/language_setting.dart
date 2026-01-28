@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 
 class LanguageSetting extends StatelessWidget {
   final String selectedLanguage;
@@ -12,10 +13,14 @@ class LanguageSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: () {
         showModalBottomSheet(
           context: context,
+          backgroundColor: colorScheme.surface,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
@@ -34,33 +39,38 @@ class LanguageSetting extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF0288D1).withOpacity(0.1),
+                color: colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
-                Icons.language,
-                color: Color(0xFF0288D1),
-                size: 22,
-              ),
+              child: Icon(Icons.language, color: colorScheme.primary, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Ngôn ngữ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  Text(
+                    AppLocalizations.of(context)!.language_menu,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    selectedLanguage == 'vi' ? 'Tiếng Việt' : 'English',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    selectedLanguage == 'vi'
+                        ? AppLocalizations.of(context)!.vietnamese_label
+                        : AppLocalizations.of(context)!.english_label,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
           ],
         ),
       ),
@@ -80,31 +90,44 @@ class LanguageBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Chọn ngôn ngữ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)!.select_language_title,
+            style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 20),
           RadioListTile<String>(
-            title: const Text('Tiếng Việt'),
+            title: Text(
+              AppLocalizations.of(context)!.vietnamese_label,
+              style: theme.textTheme.bodyLarge,
+            ),
             value: 'vi',
             groupValue: selectedLanguage,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: colorScheme.primary,
             onChanged: (value) {
               onChanged(value!);
               Navigator.pop(context);
             },
           ),
           RadioListTile<String>(
-            title: const Text('English'),
+            title: Text(
+              AppLocalizations.of(context)!.english_label,
+              style: theme.textTheme.bodyLarge,
+            ),
             value: 'en',
             groupValue: selectedLanguage,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: colorScheme.primary,
             onChanged: (value) {
               onChanged(value!);
               Navigator.pop(context);

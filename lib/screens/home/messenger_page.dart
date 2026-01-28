@@ -11,6 +11,7 @@ import 'package:maintain_chat_app/bloc/chat/chatState.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userState.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import '../../utils/chatUtils.dart';
 import '../../utils/responsive_helper.dart';
 import '../../widgets/story_avatar.dart';
@@ -38,17 +39,19 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final screenPadding = ResponsiveHelper.getScreenPadding(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         title: Text(
-          'Tin nhắn',
+          AppLocalizations.of(context)!.messages_title,
           style: TextStyle(
-            color: Colors.black,
+            color: colorScheme.onSurface,
             fontSize: ResponsiveHelper.getFontSize(context, 24),
             fontWeight: FontWeight.bold,
           ),
@@ -71,7 +74,7 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                     final currentUserId =
                         FirebaseAuth.instance.currentUser?.uid ?? '';
                     if (currentUserId.isEmpty) {
-                      log('Không tìm thấy user hiện tại');
+                      log(AppLocalizations.of(context)!.user_not_found);
                       return;
                     }
 
@@ -140,7 +143,8 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
 
                 if (error != null && friends.isEmpty) {
                   return ErrorPlaceholder(
-                    message: 'Không thể tải danh sách bạn bè: $error',
+                    message:
+                        AppLocalizations.of(context)!.friend_list_load_error,
                     onRetry:
                         () => context.read<UserBloc>().add(
                           LoadFriendUsersEvent(),
@@ -152,8 +156,8 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                   height: storyListHeight,
                   child:
                       friends.isEmpty
-                          ? const EmptyPlaceholder(
-                            message: 'Chưa có bạn bè nào',
+                          ? EmptyPlaceholder(
+                            message: AppLocalizations.of(context)!.no_friends,
                             icon: Icons.people_outline,
                           )
                           : ListView.builder(
@@ -178,7 +182,10 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                 if (state.deleteState == false) {
                   showSnackBar.show_error(state.error!, context);
                 } else if (state.deleteState == true) {
-                  showSnackBar.show_success('Xóa tin nhắn thành công', context);
+                  showSnackBar.show_success(
+                    AppLocalizations.of(context)!.delete_message_success,
+                    context,
+                  );
                 }
               },
               child: BlocBuilder<ChatBloc, ChatState>(
@@ -199,7 +206,8 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                   if (error != null && chatList.isEmpty) {
                     return Expanded(
                       child: ErrorPlaceholder(
-                        message: 'Không thể tải tin nhắn: $error',
+                        message:
+                            AppLocalizations.of(context)!.messages_load_error,
                         onRetry:
                             () =>
                                 context.read<ChatBloc>().add(LoadChatsEvent()),
@@ -210,8 +218,9 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                   return Expanded(
                     child:
                         chatList.isEmpty
-                            ? const EmptyPlaceholder(
-                              message: 'Chưa có tin nhắn nào',
+                            ? EmptyPlaceholder(
+                              message:
+                                  AppLocalizations.of(context)!.no_messages,
                               icon: Icons.chat_bubble_outline,
                             )
                             : ListView.builder(
@@ -232,6 +241,8 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
   }
 
   Widget _buildFriendsSkeleton(BuildContext context, double height) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final avatarSize = ResponsiveHelper.getAvatarSize(context);
     final screenPadding = ResponsiveHelper.getScreenPadding(context);
 
@@ -251,7 +262,7 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                   width: avatarSize,
                   height: avatarSize,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: colorScheme.onSurface.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -260,7 +271,7 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
                   width: avatarSize * 0.8,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: colorScheme.onSurface.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -273,50 +284,58 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
   }
 
   Widget _buildChatsSkeleton() {
-    return ListView.builder(
-      itemCount: 8,
-      padding: EdgeInsets.zero,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  shape: BoxShape.circle,
-                ),
+    return Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return ListView.builder(
+          itemCount: 8,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurface.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: colorScheme.onSurface.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: colorScheme.onSurface.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/post/postBloc.dart';
 import 'package:maintain_chat_app/bloc/post/postEvent.dart';
 import 'package:maintain_chat_app/bloc/post/postState.dart';
@@ -88,13 +89,19 @@ class _PostsPageState extends State<PostsPage> {
       });
     }
     if (result != null && result is PostItem) {
-      showSnackBar.show_success('Bài viết đã được tạo thành công!', context);
+      showSnackBar.show_success(
+        AppLocalizations.of(context)!.create_post_success,
+        context,
+      );
     } else if (result == 404) {
-      showSnackBar.show_error('Bài viết tạo thất bại!', context);
+      showSnackBar.show_error(
+        AppLocalizations.of(context)!.create_post_failed,
+        context,
+      );
     }
   }
 
-  Widget _buildProgressWidget() {
+  Widget _buildProgressWidget(ThemeData theme, ColorScheme colorScheme) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -106,9 +113,9 @@ class _PostsPageState extends State<PostsPage> {
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade200),
+            border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
           ),
           child: Row(
             children: [
@@ -118,17 +125,16 @@ class _PostsPageState extends State<PostsPage> {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.blue.shade700,
+                    colorScheme.primary,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
-                'Đang đăng bài viết...',
-                style: TextStyle(
-                  fontSize: 14,
+                AppLocalizations.of(context)!.posting_placeholder,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: Colors.blue.shade700,
+                  color: colorScheme.primary,
                 ),
               ),
             ],
@@ -140,6 +146,9 @@ class _PostsPageState extends State<PostsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return BlocBuilder<PostBloc, PostState>(
       buildWhen: (previous, current) {
         return previous.posts != current.posts ||
@@ -148,24 +157,29 @@ class _PostsPageState extends State<PostsPage> {
       builder: (context, state) {
         if (state.isLoading) {
           return Scaffold(
-            backgroundColor: Colors.grey[100],
+            backgroundColor: colorScheme.surface,
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: Colors.white,
+              backgroundColor: colorScheme.surface,
+              surfaceTintColor: colorScheme.surface,
               title: Text(
-                'Bài viết',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: ResponsiveHelper.getFontSize(context, 24),
+                AppLocalizations.of(context)!.posts_title,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
+                  fontSize: ResponsiveHelper.getFontSize(context, 24),
                 ),
               ),
             ),
             body: Column(
               children: [
-                _buildProgressWidget(),
-                const Expanded(
-                  child: Center(child: CircularProgressIndicator()),
+                _buildProgressWidget(theme, colorScheme),
+                Expanded(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -173,29 +187,32 @@ class _PostsPageState extends State<PostsPage> {
         }
         if (state.errorMessage != null) {
           return Scaffold(
-            backgroundColor: Colors.grey[100],
+            backgroundColor: colorScheme.surface,
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: Colors.white,
+              backgroundColor: colorScheme.surface,
+              surfaceTintColor: colorScheme.surface,
               title: Text(
-                'Bài viết',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: ResponsiveHelper.getFontSize(context, 24),
+                AppLocalizations.of(context)!.posts_title,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.bold,
+                  fontSize: ResponsiveHelper.getFontSize(context, 24),
                 ),
               ),
             ),
             body: Column(
               children: [
-                _buildProgressWidget(),
+                _buildProgressWidget(theme, colorScheme),
                 Expanded(
                   child: Center(
                     child: Text(
-                      'Lỗi tải bài viết: ${state.errorMessage}',
-                      style: TextStyle(
+                      AppLocalizations.of(
+                        context,
+                      )!.error_loading_posts(state.errorMessage!),
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: ResponsiveHelper.getFontSize(context, 16),
-                        color: Colors.red,
+                        color: colorScheme.error,
                       ),
                     ),
                   ),
@@ -209,23 +226,24 @@ class _PostsPageState extends State<PostsPage> {
           builder: (context, userState) {
             final currentUserId = userState.userApp?.id;
             return Scaffold(
-              backgroundColor: Colors.grey[100],
+              backgroundColor: colorScheme.surface,
               appBar: AppBar(
                 elevation: 0,
-                backgroundColor: Colors.white,
+                backgroundColor: colorScheme.surface,
+                surfaceTintColor: colorScheme.surface,
                 title: Text(
-                  'Bài viết',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: ResponsiveHelper.getFontSize(context, 24),
+                  AppLocalizations.of(context)!.posts_title,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.getFontSize(context, 24),
                   ),
                 ),
                 actions: [
                   IconButton(
                     icon: Icon(
                       Icons.search,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                       size: ResponsiveHelper.getFontSize(context, 24),
                     ),
                     onPressed: () {},
@@ -236,16 +254,16 @@ class _PostsPageState extends State<PostsPage> {
                   posts.isEmpty
                       ? Center(
                         child: Text(
-                          'Chưa có bài viết nào. Hãy tạo bài viết mới!',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.no_posts_message,
+                          style: theme.textTheme.bodyMedium?.copyWith(
                             fontSize: ResponsiveHelper.getFontSize(context, 16),
-                            color: Colors.grey[600],
+                            color: theme.disabledColor,
                           ),
                         ),
                       )
                       : Column(
                         children: [
-                          _buildProgressWidget(),
+                          _buildProgressWidget(theme, colorScheme),
                           Expanded(
                             child: ListView.builder(
                               controller: _scrollController,
@@ -259,7 +277,9 @@ class _PostsPageState extends State<PostsPage> {
                                       DeletePost(posts[index].id ?? ''),
                                     );
                                     showSnackBar.show_success(
-                                      'Bài viết đã được xóa',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.post_deleted_message,
                                       context,
                                     );
                                   },
@@ -276,8 +296,9 @@ class _PostsPageState extends State<PostsPage> {
                       ),
               floatingActionButton: FloatingActionButton(
                 onPressed: createNewPost,
-                backgroundColor: const Color(0xFF0288D1),
-                child: const Icon(Icons.add, color: Colors.white),
+                backgroundColor: colorScheme.primary,
+                elevation: 4,
+                child: Icon(Icons.add, color: colorScheme.onPrimary),
               ),
             );
           },
