@@ -99,3 +99,13 @@ class ToggleFriendEvent extends UserEvent {
   @override
   List<Object?> get props => [friendId, isFriend];
 }
+
+class ToggleNotificationEvent extends UserEvent {
+  final String friendId;
+  final bool isNotification;
+
+  ToggleNotificationEvent(this.friendId, this.isNotification);
+
+  @override
+  List<Object?> get props => [friendId, isNotification];
+}

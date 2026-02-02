@@ -158,6 +158,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get loading_error => 'Lỗi khi tải dữ liệu';
 
   @override
+  String get notification_token_error =>
+      'Có lỗi xảy ra khi lấy token thông báo';
+
+  @override
   String get search_hint => 'Tìm kiếm...';
 
   @override

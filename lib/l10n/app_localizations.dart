@@ -392,6 +392,12 @@ abstract class AppLocalizations {
   /// **'Lỗi khi tải dữ liệu'**
   String get loading_error;
 
+  /// No description provided for @notification_token_error.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có lỗi xảy ra khi lấy token thông báo'**
+  String get notification_token_error;
+
   /// No description provided for @search_hint.
   ///
   /// In vi, this message translates to:

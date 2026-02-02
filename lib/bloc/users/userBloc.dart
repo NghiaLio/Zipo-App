@@ -25,6 +25,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<ToggleFriendRequestEvent>(_onToggleFriendRequest);
     on<RejectFriendRequestEvent>(_onRejectFriendRequest);
     on<ToggleFriendEvent>(_onToggleFriend);
+    on<ToggleNotificationEvent>(_onToggleNotification);
   }
 
   Future<void> _onLoadUsers(
@@ -162,6 +163,21 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         receiverId: event.receiverId,
       );
       add(LoadUsersEvent(state.userApp?.id ?? ''));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onToggleNotification(
+    ToggleNotificationEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    try {
+      await userRepository.toggleNotification(
+        event.friendId,
+        event.isNotification,
+      );
+      // add(LoadUsersEvent(state.userApp?.id ?? ''));
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
     }

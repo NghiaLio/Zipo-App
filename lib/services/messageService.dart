@@ -5,7 +5,10 @@ import 'package:maintain_chat_app/Caching/Database/Init.dart';
 import 'package:maintain_chat_app/Caching/Database/ListMessages.dart';
 import 'package:maintain_chat_app/models/chat_models.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
+import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/repositories/messageRepo.dart';
+import 'package:maintain_chat_app/repositories/notificationRepo.dart';
+import 'package:maintain_chat_app/services/notificationService.dart';
 
 class MessageService implements MessageRepo {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
@@ -13,8 +16,15 @@ class MessageService implements MessageRepo {
     InitializedCaching.isar,
   );
   StreamSubscription? _remoteSub;
+
+  final NotificationRepo _notificationService = NotificationService();
   @override
-  Future<void> createMessage(MessageItem message, String chatId) async {
+  Future<void> createMessage(
+    MessageItem message,
+    String chatId,
+    UserApp receiveUser,
+    UserApp currentUser,
+  ) async {
     try {
       // Optimistic update: upsert local trước
       await _isarMessageDao.updateLatestMessage(chatId, false);
@@ -65,15 +75,35 @@ class MessageService implements MessageRepo {
         'listMessage': updatedOldMessages.map((mess) => mess.toMap()).toList(),
       });
 
-      // if (mess.type == MessageType.Image) {
-      //   sendPushNotification(currentUser, receiveUser, 'Sent a Image');
-      // } else if (mess.type == MessageType.Audio) {
-      //   sendPushNotification(currentUser, receiveUser, 'Sent a Audio');
-      // } else if (mess.type == MessageType.Video) {
-      //   sendPushNotification(currentUser, receiveUser, 'Sent a Video');
-      // } else {
-      //   sendPushNotification(currentUser, receiveUser, mess.content);
-      // }
+      if (newMessageWithLatest.type == MessageType.Image) {
+        await _notificationService.sendNotification(
+          senderUser: currentUser,
+          receiverUser: receiveUser,
+          title: 'New Message',
+          body: 'Sent a Image',
+        );
+      } else if (newMessageWithLatest.type == MessageType.Audio) {
+        await _notificationService.sendNotification(
+          senderUser: currentUser,
+          receiverUser: receiveUser,
+          title: 'New Message',
+          body: 'Sent a Audio',
+        );
+      } else if (newMessageWithLatest.type == MessageType.Video) {
+        await _notificationService.sendNotification(
+          senderUser: currentUser,
+          receiverUser: receiveUser,
+          title: 'New Message',
+          body: 'Sent a Video',
+        );
+      } else {
+        await _notificationService.sendNotification(
+          senderUser: currentUser,
+          receiverUser: receiveUser,
+          title: 'New Message',
+          body: newMessageWithLatest.content,
+        );
+      }
     } catch (e) {
       // Nếu fail, delete khỏi local by sendAt
       final sendAtString = message.sendAt.toDate().toIso8601String();

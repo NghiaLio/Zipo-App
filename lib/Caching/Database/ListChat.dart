@@ -35,6 +35,7 @@ class IsarChatDao {
           email: chat.participant?.email ?? '',
           avatarUrl: chat.participant?.avatarUrl ?? '',
           isOnline: chat.participant?.isOnline ?? false,
+          lastActive: chat.participant?.lastActive?.toDate(),
         );
         await isar.chatEntitys.put(existing);
       } else {

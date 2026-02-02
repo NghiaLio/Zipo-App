@@ -48,25 +48,23 @@ class IsarFriendsDao {
     });
 
     // Đồng bộ trạng thái online vào ChatEntity
-    await _updateChatParticipantOnlineStatus(user.id, user.isOnline ?? false);
+    await _updateChatParticipantStatus(user);
   }
 
-  // Helper method để cập nhật trạng thái online trong ChatEntity
-  Future<void> _updateChatParticipantOnlineStatus(
-    String userId,
-    bool isOnline,
-  ) async {
+  // Helper method để cập nhật trạng thái user trong ChatEntity
+  Future<void> _updateChatParticipantStatus(UserApp user) async {
     await isar.writeTxn(() async {
       // Lấy tất cả chat có participant là user này
       final chats =
           await isar.chatEntitys
               .filter()
-              .participant((q) => q.userIdEqualTo(userId))
+              .participant((q) => q.userIdEqualTo(user.id))
               .findAll();
 
-      // Cập nhật isOnline cho tất cả chat
+      // Cập nhật info cho tất cả chat
       for (final chat in chats) {
-        chat.participant.isOnline = isOnline;
+        chat.participant.isOnline = user.isOnline ?? false;
+        chat.participant.lastActive = user.lastActive?.toDate();
         await isar.chatEntitys.put(chat);
       }
     });
@@ -156,6 +154,52 @@ class IsarFriendsDao {
           friends.remove(friendId);
         }
         userEntity.friends = friends;
+        await isar.userEntitys.put(userEntity);
+      }
+    });
+  }
+
+  Future<void> toggleNotification(String userId, bool isNotification) async {
+    await isar.writeTxn(() async {
+      final userEntity =
+          await isar.userEntitys.where().uidEqualTo(userId).findFirst();
+      if (userEntity != null) {
+        if (isNotification) {
+          userEntity.enableNotify?.add(userId);
+        } else {
+          userEntity.enableNotify?.remove(userId);
+        }
+        await isar.userEntitys.put(userEntity);
+      }
+    });
+  }
+
+  Future<void> updatePushToken(String userId, String token) async {
+    await isar.writeTxn(() async {
+      final userEntity =
+          await isar.userEntitys.where().uidEqualTo(userId).findFirst();
+      if (userEntity != null) {
+        final tokens = userEntity.pushToken ?? [];
+        if (!tokens.contains(token)) {
+          tokens.add(token);
+        }
+        userEntity.pushToken = tokens;
+        await isar.userEntitys.put(userEntity);
+      }
+    });
+  }
+
+  Future<void> removePushTokens(
+    String userId,
+    List<String> tokensToRemove,
+  ) async {
+    await isar.writeTxn(() async {
+      final userEntity =
+          await isar.userEntitys.where().uidEqualTo(userId).findFirst();
+      if (userEntity != null) {
+        final tokens = userEntity.pushToken ?? [];
+        tokens.removeWhere((token) => tokensToRemove.contains(token));
+        userEntity.pushToken = tokens;
         await isar.userEntitys.put(userEntity);
       }
     });

@@ -12,7 +12,7 @@ class UserApp {
   List<String>? requiredAddFriend;
   List<String>? friends;
   Timestamp? lastActive;
-  String? pushToken;
+  List<String>? pushToken;
   List<String>? enableNotify;
 
   UserApp({
@@ -44,7 +44,7 @@ class UserApp {
     List<String>? requiredAddFriend,
     List<String>? friends,
     Timestamp? lastActive,
-    String? pushToken,
+    List<String>? pushToken,
     List<String>? enableNotify,
   }) {
     return UserApp(
@@ -94,7 +94,7 @@ class UserApp {
       requiredAddFriend: List<String>.from(json['requiredAddFriend'] ?? []),
       friends: List<String>.from(json['friends'] ?? []),
       lastActive: json['lastActive'],
-      pushToken: json['pushToken'] ?? '',
+      pushToken: List<String>.from(json['pushToken'] ?? []),
       enableNotify: List<String>.from(json['enableNotify'] ?? []),
     );
   }

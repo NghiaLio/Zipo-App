@@ -49,6 +49,7 @@
   "messages_load_error": "Không thể tải tin nhắn",
   "no_messages": "Chưa có tin nhắn nào",
   "loading_error": "Lỗi khi tải dữ liệu",
+  "notification_token_error": "Có lỗi xảy ra khi lấy token thông báo",
   "search_hint": "Tìm kiếm",
   "notifications_action": "Thông báo",
   "delete_action": "Xóa",

@@ -49,6 +49,7 @@
   "messages_load_error": "Could not load messages",
   "no_messages": "No messages yet",
   "loading_error": "Error loading data",
+  "notification_token_error": "An error occurred while retrieving the notification token",
   "search_hint": "Search",
   "notifications_action": "Notifications",
   "delete_action": "Delete",

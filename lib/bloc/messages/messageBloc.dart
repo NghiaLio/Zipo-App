@@ -68,7 +68,7 @@ class MessageBloc extends Bloc<MessageEvent, MessageState> {
   ) async {
     try {
       // emit(state.copyWith(isLoading: true));
-      await messageRepository.createMessage(event.message, event.chatId);
+      await messageRepository.createMessage(event.message, event.chatId, event.currentUser, event.receiveUser);
       emit(
         state.copyWith(isLoading: false, deleteState: null, sendState: true),
       );

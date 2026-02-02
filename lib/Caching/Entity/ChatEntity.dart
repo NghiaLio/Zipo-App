@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:maintain_chat_app/models/userModels.dart';
 import '../../models/chat_models.dart';
 part 'ChatEntity.g.dart';
@@ -31,6 +32,7 @@ class UserEmbedded {
   late String email;
   late String avatarUrl;
   late bool isOnline;
+  DateTime? lastActive;
 
   UserEmbedded({
     this.userId = '',
@@ -38,6 +40,7 @@ class UserEmbedded {
     this.email = '',
     this.avatarUrl = '',
     this.isOnline = false,
+    this.lastActive,
   });
 }
 
@@ -55,6 +58,7 @@ ChatEntity toChatEntity(ChatItem item) {
     email: item.participant?.email ?? '',
     avatarUrl: item.participant?.avatarUrl ?? '',
     isOnline: item.participant?.isOnline ?? false,
+    lastActive: item.participant?.lastActive?.toDate(),
   );
   return entity;
 }
@@ -69,6 +73,10 @@ ChatItem fromChatEntity(ChatEntity chatEntity) {
       email: participants.email,
       avatarUrl: participants.avatarUrl,
       isOnline: participants.isOnline,
+      lastActive:
+          participants.lastActive != null
+              ? Timestamp.fromDate(participants.lastActive!)
+              : null,
     ),
     message: chatEntity.lastMessage,
     time: chatEntity.time,

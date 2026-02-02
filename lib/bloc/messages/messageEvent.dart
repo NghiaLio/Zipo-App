@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
+import 'package:maintain_chat_app/models/userModels.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class MessageEvent extends Equatable {
   const MessageEvent();
@@ -40,11 +42,13 @@ class MessagesErrorEvent extends MessageEvent {
 class CreateMessageEvent extends MessageEvent {
   final MessageItem message;
   final String chatId;
+  final UserApp currentUser;
+  final UserApp receiveUser;
 
-  const CreateMessageEvent(this.message, this.chatId);
+  const CreateMessageEvent(this.message, this.chatId, this.currentUser, this.receiveUser);
 
   @override
-  List<Object> get props => [message, chatId];
+  List<Object> get props => [message, chatId, currentUser, receiveUser];
 }
 
 // undo message

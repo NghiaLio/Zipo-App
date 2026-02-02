@@ -63,6 +63,7 @@ class MyApp extends StatelessWidget {
   final Authrepo authrepo = Authservice();
   final UserRepo userRepo = UserService();
   final MessageRepo messageRepository = MessageService();
+  
 
   // Tạo instance 1 lần thay vì dùng getter
   late final ChatRepo chatRepository = ChatService(userRepo);
@@ -135,6 +136,7 @@ class MyApp extends StatelessWidget {
                         as Map<String, dynamic>;
                 return ModernChatScreen(
                   user: args['user'] as UserApp,
+                  currentUser: args['currentUser'] as UserApp,
                   chatId: args['chatId'] as String,
                 );
               },

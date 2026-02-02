@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:maintain_chat_app/bloc/auth/authBloc.dart';
 import 'package:maintain_chat_app/bloc/chat/chatBloc.dart';
 import 'package:maintain_chat_app/bloc/chat/chatEvent.dart';
+import 'package:maintain_chat_app/bloc/users/userBloc.dart';
+import 'package:maintain_chat_app/bloc/users/userEvent.dart';
 import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/messages/messageBloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageEvent.dart';
+import 'package:maintain_chat_app/models/userModels.dart';
 import 'package:maintain_chat_app/utils/convert_time.dart';
 import '../models/chat_models.dart';
 import '../utils/responsive_helper.dart';
@@ -23,16 +27,29 @@ class ChatTile extends StatefulWidget {
 
 class _ChatTileState extends State<ChatTile> {
   bool _isPressed = false;
+  late UserApp currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUser = context.read<AuthBloc>().state.user!;
+    print(currentUser.enableNotify);
+  }
 
   Future<void> _navigateToChatDetail() async {
     if (widget.chat.participant != null) {
       Navigator.pushNamed(
         context,
         '/chatDetail',
-        arguments: {'user': widget.chat.participant, 'chatId': widget.chat.id},
+        arguments: {'user': widget.chat.participant, 'currentUser': currentUser, 'chatId': widget.chat.id},
       );
     }
     context.read<MessageBloc>().add(LoadMessagesEvent(widget.chat.id));
+  }
+
+  bool isNotification() {
+    return currentUser.enableNotify?.contains(widget.chat.participant?.id) ??
+        false;
   }
 
   @override
@@ -68,16 +85,31 @@ class _ChatTileState extends State<ChatTile> {
         children: [
           SlidableAction(
             onPressed: (context) {
-              dev.log(
-                'Tắt/bật thông báo cho chat: ${widget.chat.participant?.userName}',
+              context.read<UserBloc>().add(
+                ToggleNotificationEvent(
+                  widget.chat.participant?.id ?? '',
+                  !isNotification(),
+                ),
               );
-              // TODO: Implement toggle notification logic
+              // optimistically update UI
+              setState(() {
+                if (isNotification()) {
+                  currentUser.enableNotify?.remove(widget.chat.participant?.id);
+                } else {
+                  currentUser.enableNotify?.add(
+                    widget.chat.participant?.id ?? '',
+                  );
+                }
+              });
             },
             backgroundColor: const Color(
               0xFF21B7CA,
             ), // Keeping info color as it's common for Slidable
             foregroundColor: Colors.white,
-            icon: Icons.notifications_off,
+            icon:
+                isNotification()
+                    ? Icons.notifications
+                    : Icons.notifications_off,
             label: AppLocalizations.of(context)!.notification_label,
           ),
           SlidableAction(
@@ -133,25 +165,43 @@ class _ChatTileState extends State<ChatTile> {
                             widget.chat.participant?.avatarUrl ?? '',
                           ),
                         ),
-                    if (widget.chat.participant?.isOnline ?? false)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: onlineIndicatorSize,
-                          height: onlineIndicatorSize,
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF4CAF50,
-                            ), // Standard online green
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.surface,
-                              width: 2,
+                    Builder(
+                      builder: (context) {
+                        final isUserOnline =
+                            widget.chat.participant?.isOnline ?? false;
+                        bool isOnline = isUserOnline;
+                        if (isOnline &&
+                            widget.chat.participant?.lastActive != null) {
+                          final lastActive =
+                              widget.chat.participant!.lastActive!.toDate();
+                          if (DateTime.now().difference(lastActive).inMinutes >
+                              5) {
+                            isOnline = false;
+                          }
+                        }
+
+                        if (!isOnline) return const SizedBox();
+
+                        return Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: onlineIndicatorSize,
+                            height: onlineIndicatorSize,
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF4CAF50,
+                              ), // Standard online green
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.surface,
+                                width: 2,
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
+                    ),
                   ],
                 ),
                 SizedBox(

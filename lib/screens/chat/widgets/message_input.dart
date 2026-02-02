@@ -106,8 +106,9 @@ class MessageInput extends StatelessWidget {
                     ),
                     child: TextField(
                       controller: textController,
-                      style: theme.textTheme.bodyMedium?.copyWith(
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurface,
+
                       ),
                       decoration: InputDecoration(
                         hintText:

@@ -17,5 +17,5 @@ abstract class UserRepo {
     required String receiverId,
   });
   Future<void> toggleFriend(String friendId, bool isFriend);
-  // Future<void> updateUserProfile(String userId, Map<String, dynamic> updates);
+  Future<void> toggleNotification(String userId, bool isNotification);
 }

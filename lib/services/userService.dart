@@ -5,7 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:maintain_chat_app/Caching/Database/Init.dart';
 import 'package:maintain_chat_app/Caching/Database/ListFriends.dart';
 import 'package:maintain_chat_app/models/userModels.dart';
+import 'package:maintain_chat_app/repositories/notificationRepo.dart';
 import 'package:maintain_chat_app/repositories/userRepo.dart';
+import 'package:maintain_chat_app/services/notificationService.dart';
 
 class UserService implements UserRepo {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
@@ -14,6 +16,8 @@ class UserService implements UserRepo {
   final IsarFriendsDao _isarFriendsDao = IsarFriendsDao(
     InitializedCaching.isar,
   );
+
+  final NotificationRepo notificationService = NotificationService();
 
   @override
   Future<UserApp?> getUserById(String userId) {
@@ -231,7 +235,7 @@ class UserService implements UserRepo {
     try {
       // Xóa senderId khỏi requiredAddFriend của receiver
       await _isarFriendsDao.toggleFriendRequest(receiverId, senderId, false);
-      
+
       await _firebaseFirestore.collection('UserData').doc(receiverId).update({
         'requiredAddFriend': FieldValue.arrayRemove([senderId]),
       });
@@ -261,6 +265,9 @@ class UserService implements UserRepo {
         await _firebaseFirestore.collection('UserData').doc(friendId).update({
           'friends': FieldValue.arrayUnion([_firebaseAuth.currentUser!.uid]),
         });
+        // add notification
+        await _isarFriendsDao.toggleNotification(userId, true);
+        await toggleNotification(friendId, true);
       } else {
         // remove friend - xóa bạn bè
         await _firebaseFirestore
@@ -272,10 +279,17 @@ class UserService implements UserRepo {
         await _firebaseFirestore.collection('UserData').doc(friendId).update({
           'friends': FieldValue.arrayRemove([_firebaseAuth.currentUser!.uid]),
         });
+        // remove notification
+        await _isarFriendsDao.toggleNotification(userId, false);
+        await toggleNotification(friendId, false);
       }
     } catch (e) {
       throw Exception(e);
     }
   }
-  // Future<void> updateUserProfile(String userId, Map<String, dynamic> updates) {}
+
+  @override
+  Future<void> toggleNotification(String userId, bool isNotification) async {
+    await notificationService.toggleNotification(userId, isNotification);
+  }
 }

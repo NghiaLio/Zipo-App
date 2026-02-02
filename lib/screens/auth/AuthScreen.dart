@@ -1,14 +1,17 @@
 // ignore_for_file: must_be_immutable, use_build_context_synchronously
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/bloc/auth/authEvent.dart';
 import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/bloc/users/userEvent.dart';
+import 'package:maintain_chat_app/repositories/notificationRepo.dart';
 import 'package:maintain_chat_app/screens/auth/Login.dart';
 import 'package:maintain_chat_app/screens/home/home_chat_screen.dart';
+import 'package:maintain_chat_app/services/notificationService.dart';
 import 'package:maintain_chat_app/widgets/Loading.dart';
+import 'package:maintain_chat_app/widgets/TopSnackBar.dart';
 
 import '../../bloc/auth/authBloc.dart';
 import '../../bloc/auth/authStates.dart';
@@ -25,6 +28,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   late bool isLogin;
+  final NotificationRepo notificationRepository = NotificationService();
   @override
   void initState() {
     super.initState();
@@ -53,6 +57,15 @@ class _AuthScreenState extends State<AuthScreen> {
       },
       listener: (context, state) async {
         if (state.isAuthenticated) {
+          // Save Firebase Messaging Token
+          await notificationRepository
+              .saveFirebaseMessagingToken(state.user?.id ?? '')
+              .catchError((onError) {
+                showSnackBar.show_error(
+                  AppLocalizations.of(context)!.notification_token_error,
+                  context,
+                );
+              });
           // Lấy instance từ AuthBloc thay vì tạo mới
           final authBloc = context.read<AuthBloc>();
           await authBloc.chatRepository.init();

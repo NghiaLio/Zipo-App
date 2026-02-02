@@ -158,6 +158,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading_error => 'Error loading data';
 
   @override
+  String get notification_token_error =>
+      'An error occurred while retrieving the notification token';
+
+  @override
   String get search_hint => 'Search...';
 
   @override

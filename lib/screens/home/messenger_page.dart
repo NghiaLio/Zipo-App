@@ -124,9 +124,7 @@ class _MessengerHomePageState extends State<MessengerHomePage> {
             BlocBuilder<UserBloc, UserState>(
               buildWhen:
                   (previous, current) =>
-                      previous.listFriends != current.listFriends ||
-                      previous.isLoading != current.isLoading ||
-                      previous.error != current.error,
+                      previous.listFriends != current.listFriends,
               builder: (context, state) {
                 final friends = state.listFriends;
                 final isLoading = state.isLoading;

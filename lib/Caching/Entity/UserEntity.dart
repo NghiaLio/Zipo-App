@@ -21,7 +21,7 @@ class UserEntity {
   late List<String>? requiredAddFriend;
   late List<String>? friends;
   DateTime? lastActive;
-  late String? pushToken;
+  late List<String>? pushToken;
   late List<String>? enableNotify;
 
   UserEntity({

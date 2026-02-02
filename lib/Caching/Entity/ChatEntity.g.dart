@@ -1314,13 +1314,18 @@ const UserEmbeddedSchema = Schema(
       name: r'isOnline',
       type: IsarType.bool,
     ),
-    r'name': PropertySchema(
+    r'lastActive': PropertySchema(
       id: 3,
+      name: r'lastActive',
+      type: IsarType.dateTime,
+    ),
+    r'name': PropertySchema(
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
     r'userId': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'userId',
       type: IsarType.string,
     )
@@ -1353,8 +1358,9 @@ void _userEmbeddedSerialize(
   writer.writeString(offsets[0], object.avatarUrl);
   writer.writeString(offsets[1], object.email);
   writer.writeBool(offsets[2], object.isOnline);
-  writer.writeString(offsets[3], object.name);
-  writer.writeString(offsets[4], object.userId);
+  writer.writeDateTime(offsets[3], object.lastActive);
+  writer.writeString(offsets[4], object.name);
+  writer.writeString(offsets[5], object.userId);
 }
 
 UserEmbedded _userEmbeddedDeserialize(
@@ -1367,8 +1373,9 @@ UserEmbedded _userEmbeddedDeserialize(
     avatarUrl: reader.readStringOrNull(offsets[0]) ?? '',
     email: reader.readStringOrNull(offsets[1]) ?? '',
     isOnline: reader.readBoolOrNull(offsets[2]) ?? false,
-    name: reader.readStringOrNull(offsets[3]) ?? '',
-    userId: reader.readStringOrNull(offsets[4]) ?? '',
+    lastActive: reader.readDateTimeOrNull(offsets[3]),
+    name: reader.readStringOrNull(offsets[4]) ?? '',
+    userId: reader.readStringOrNull(offsets[5]) ?? '',
   );
   return object;
 }
@@ -1387,8 +1394,10 @@ P _userEmbeddedDeserializeProp<P>(
     case 2:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 3:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 5:
       return (reader.readStringOrNull(offset) ?? '') as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1673,6 +1682,80 @@ extension UserEmbeddedQueryFilter
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isOnline',
         value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastActive',
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastActive',
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastActive',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastActive',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastActive',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<UserEmbedded, UserEmbedded, QAfterFilterCondition>
+      lastActiveBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastActive',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }

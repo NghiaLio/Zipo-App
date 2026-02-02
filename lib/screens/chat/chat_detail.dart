@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageBloc.dart';
 import 'package:maintain_chat_app/bloc/messages/messageEvent.dart';
 import 'package:maintain_chat_app/bloc/messages/messageState.dart';
+import 'package:maintain_chat_app/bloc/users/userBloc.dart';
 import 'package:maintain_chat_app/constants/storagePath.dart';
 import 'package:maintain_chat_app/l10n/app_localizations.dart';
 import 'package:maintain_chat_app/models/message_models.dart';
@@ -25,10 +26,15 @@ import 'widgets/audio_recorder_widget.dart';
 
 class ModernChatScreen extends StatefulWidget {
   final UserApp user;
+  final UserApp currentUser;
   final String chatId;
 
-  const ModernChatScreen({super.key, required this.user, required this.chatId});
-
+  const ModernChatScreen({
+    super.key,
+    required this.user,
+    required this.currentUser,
+    required this.chatId,
+  });
   @override
   State<ModernChatScreen> createState() => _ModernChatScreenState();
 }
@@ -44,6 +50,22 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
   Map<String, String>? _replyingTo;
   bool _isLoadingMore = false;
 
+  late UserApp recipientUser;
+
+  void loadFullRecipientUser() async {
+    final userBloc = context.read<UserBloc>();
+    final fullUser = await userBloc.userRepository.getUserById(widget.user.id);
+    if (fullUser != null) {
+      setState(() {
+        recipientUser = fullUser;
+      });
+    } else {
+      setState(() {
+        recipientUser = widget.user;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +74,8 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
     final messageBloc = context.read<MessageBloc>();
     messageBloc.messageRepository.init(widget.chatId, widget.user.id);
     messageBloc.add(LoadMessagesEvent(widget.chatId));
+
+    loadFullRecipientUser();
   }
 
   void _onScroll() {
@@ -96,7 +120,14 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
     );
 
     final messageBloc = context.read<MessageBloc>();
-    messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+    messageBloc.add(
+      CreateMessageEvent(
+        newMessage,
+        widget.chatId,
+        recipientUser,
+        widget.currentUser,
+      ),
+    );
 
     setState(() {
       _textController.clear();
@@ -156,7 +187,14 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
           isLatest: true,
         );
         final messageBloc = context.read<MessageBloc>();
-        messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+        messageBloc.add(
+          CreateMessageEvent(
+            newMessage,
+            widget.chatId,
+            recipientUser,
+            widget.currentUser,
+          ),
+        );
       }
     } catch (e) {
       showSnackBar.show_error(
@@ -191,7 +229,14 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
           isLatest: true,
         );
         final messageBloc = context.read<MessageBloc>();
-        messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+        messageBloc.add(
+          CreateMessageEvent(
+            newMessage,
+            widget.chatId,
+            recipientUser,
+            widget.currentUser,
+          ),
+        );
       }
     } catch (e) {
       showSnackBar.show_error(
@@ -373,7 +418,14 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
       );
 
       final messageBloc = context.read<MessageBloc>();
-      messageBloc.add(CreateMessageEvent(newMessage, widget.chatId));
+      messageBloc.add(
+        CreateMessageEvent(
+          newMessage,
+          widget.chatId,
+          widget.user,
+          widget.currentUser,
+        ),
+      );
 
       // Xóa file local sau khi gửi thành công
       try {
@@ -510,7 +562,6 @@ class _ModernChatScreenState extends State<ModernChatScreen> {
                   previous.isLoading != current.isLoading ||
                   previous.error != current.error,
           builder: (context, state) {
-            log(state.toString());
             if (state.isLoading) {
               return Center(
                 child: CircularProgressIndicator(color: colorScheme.primary),

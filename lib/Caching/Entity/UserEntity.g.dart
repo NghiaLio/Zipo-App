@@ -70,7 +70,7 @@ const UserEntitySchema = CollectionSchema(
     r'pushToken': PropertySchema(
       id: 10,
       name: r'pushToken',
-      type: IsarType.string,
+      type: IsarType.stringList,
     ),
     r'requiredAddFriend': PropertySchema(
       id: 11,
@@ -163,9 +163,15 @@ int _userEntityEstimateSize(
     }
   }
   {
-    final value = object.pushToken;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    final list = object.pushToken;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
     }
   }
   {
@@ -200,7 +206,7 @@ void _userEntitySerialize(
   writer.writeString(offsets[7], object.name);
   writer.writeString(offsets[8], object.otherName);
   writer.writeString(offsets[9], object.phoneNumber);
-  writer.writeString(offsets[10], object.pushToken);
+  writer.writeStringList(offsets[10], object.pushToken);
   writer.writeStringList(offsets[11], object.requiredAddFriend);
   writer.writeString(offsets[12], object.uid);
 }
@@ -222,7 +228,7 @@ UserEntity _userEntityDeserialize(
     name: reader.readString(offsets[7]),
     otherName: reader.readStringOrNull(offsets[8]),
     phoneNumber: reader.readStringOrNull(offsets[9]),
-    pushToken: reader.readStringOrNull(offsets[10]),
+    pushToken: reader.readStringList(offsets[10]),
     requiredAddFriend: reader.readStringList(offsets[11]),
     uid: reader.readString(offsets[12]),
   );
@@ -258,7 +264,7 @@ P _userEntityDeserializeProp<P>(
     case 9:
       return (reader.readStringOrNull(offset)) as P;
     case 10:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 11:
       return (reader.readStringList(offset)) as P;
     case 12:
@@ -1946,8 +1952,9 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenEqualTo(
-    String? value, {
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1960,8 +1967,8 @@ extension UserEntityQueryFilter
   }
 
   QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
-      pushTokenGreaterThan(
-    String? value, {
+      pushTokenElementGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1975,8 +1982,9 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenLessThan(
-    String? value, {
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1990,9 +1998,10 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -2010,7 +2019,7 @@ extension UserEntityQueryFilter
   }
 
   QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
-      pushTokenStartsWith(
+      pushTokenElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2023,7 +2032,8 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenEndsWith(
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2036,9 +2046,8 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'pushToken',
@@ -2048,9 +2057,8 @@ extension UserEntityQueryFilter
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition> pushTokenMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'pushToken',
@@ -2061,7 +2069,7 @@ extension UserEntityQueryFilter
   }
 
   QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
-      pushTokenIsEmpty() {
+      pushTokenElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'pushToken',
@@ -2071,12 +2079,101 @@ extension UserEntityQueryFilter
   }
 
   QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
-      pushTokenIsNotEmpty() {
+      pushTokenElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'pushToken',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<UserEntity, UserEntity, QAfterFilterCondition>
+      pushTokenLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'pushToken',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -2560,18 +2657,6 @@ extension UserEntityQuerySortBy
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterSortBy> sortByPushToken() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pushToken', Sort.asc);
-    });
-  }
-
-  QueryBuilder<UserEntity, UserEntity, QAfterSortBy> sortByPushTokenDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pushToken', Sort.desc);
-    });
-  }
-
   QueryBuilder<UserEntity, UserEntity, QAfterSortBy> sortByUid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uid', Sort.asc);
@@ -2695,18 +2780,6 @@ extension UserEntityQuerySortThenBy
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QAfterSortBy> thenByPushToken() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pushToken', Sort.asc);
-    });
-  }
-
-  QueryBuilder<UserEntity, UserEntity, QAfterSortBy> thenByPushTokenDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'pushToken', Sort.desc);
-    });
-  }
-
   QueryBuilder<UserEntity, UserEntity, QAfterSortBy> thenByUid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uid', Sort.asc);
@@ -2788,10 +2861,9 @@ extension UserEntityQueryWhereDistinct
     });
   }
 
-  QueryBuilder<UserEntity, UserEntity, QDistinct> distinctByPushToken(
-      {bool caseSensitive = true}) {
+  QueryBuilder<UserEntity, UserEntity, QDistinct> distinctByPushToken() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'pushToken', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'pushToken');
     });
   }
 
@@ -2879,7 +2951,8 @@ extension UserEntityQueryProperty
     });
   }
 
-  QueryBuilder<UserEntity, String?, QQueryOperations> pushTokenProperty() {
+  QueryBuilder<UserEntity, List<String>?, QQueryOperations>
+      pushTokenProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'pushToken');
     });
